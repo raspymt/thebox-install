@@ -30,7 +30,7 @@ mkdir /media
 pacman -Syu --noconfirm
 
 # install packages
-pacman -S --noconfirm samba minidlna mpd
+pacman -S --noconfirm samba transmission-cli minidlna mpd
 
 
 #################
@@ -81,6 +81,13 @@ systemctl enable --now smbd.service
 systemctl enable --now nmbd.service
 
 
+####################
+# TRANSMISSION-CLI #
+####################
+
+# start/enable minidlna service
+systemctl enable --now transmission.service
+
 ############
 # MINIDLNA #
 ############
@@ -98,3 +105,9 @@ systemctl enable --now minidlna.service
 
 # start/enable minidlna service
 systemctl enable --now mpd.service
+
+
+##########
+# REBBOT #
+##########
+systemctl reboot
