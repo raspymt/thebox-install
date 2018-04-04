@@ -4,13 +4,15 @@
 # INIT #
 ########
 
-# ask for new root user password
+# change root user password
+echo "Change root user password:"
 passwd root
 
 # add thebox user
 useradd -m -G wheel thebox
 
 # ask for thebox user password
+echo "Enter thebox user password:"
 passwd thebox
 
 # remove alarm user
@@ -66,6 +68,7 @@ chmod 1770 /var/lib/samba/usershares
 gpasswd sambashare -a thebox
 
 # ask for samba thebox user password
+echo "Enter thebox samba password:"
 smbpasswd -a thebox
 
 # create log files
