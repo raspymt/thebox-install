@@ -7,7 +7,7 @@
 echo "Change root user password:"
 passwd root
 # add thebox user
-useradd -m -G thebox
+useradd -m thebox
 # ask for thebox user password
 echo "Enter thebox user password:"
 passwd thebox
@@ -22,7 +22,7 @@ mkdir /media
 # update packages
 pacman -Syu --noconfirm
 # install packages
-pacman -S --noconfirm samba transmission-cli minidlna mpd
+pacman -S --noconfirm samba hostapd transmission-cli minidlna mpd
 
 #################
 # SOURCES FILES #
@@ -34,11 +34,13 @@ systemctl daemon-reload
 # reload udev rules
 udevadm control --reload-rules
 
-##########
-# DHCPCD #
-##########
+###########
+# NETWORK #
+###########
 # interface eth0
 systemctl enable --now dhcpcd@eth0.service
+# access point for Hostapd
+systemctl enable --now access-point.service
 
 #########
 # SAMBA #

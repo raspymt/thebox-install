@@ -1,0 +1,14 @@
+[Unit]
+Description=Add vitual Access Point interface uap0
+Before=wpa_supplicant@wlan0.service hostapd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/iw dev wlan0 interface add uap0 type __ap
+ExecStart=/usr/bin/ip link set dev uap0 up
+ExecStop=/usr/bin/ip link set dev uap0 down
+ExecStop=/usr/bin/iw dev uap0 del
+
+[Install]
+WantedBy=multi-user.target
