@@ -88,6 +88,9 @@ systemctl enable --now minidlna.service
 systemctl enable --now mpd.service
 
 ##########
-# REBBOT #
+# REBOOT #
 ##########
+# reload systemd daemon
+systemctl daemon-reload
+
 systemctl reboot
