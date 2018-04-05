@@ -22,7 +22,7 @@ mkdir /media
 # update packages
 pacman -Syu --noconfirm
 # install packages
-pacman -S --noconfirm samba avahi hostapd transmission-cli minidlna mpd
+pacman -S --noconfirm samba avahi hostapd ntp transmission-cli minidlna mpd
 
 #################
 # SOURCES FILES #
@@ -66,6 +66,14 @@ touch /usr/local/samba/var/log.nmbd
 # start/enable samba services
 systemctl enable --now smbd.service
 systemctl enable --now nmbd.service
+
+########
+# TIME #
+########
+# Set timezone
+timedatectl set-timezone Asia/Ho_Chi_Minh
+# start/enable ntpd service
+systemctl enable --now ntpd.service
 
 #########
 # AVAHI #
