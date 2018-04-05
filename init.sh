@@ -7,7 +7,7 @@
 echo "Change root user password:"
 passwd root
 # add thebox user
-useradd -m -G wheel thebox
+useradd -m -G thebox
 # ask for thebox user password
 echo "Enter thebox user password:"
 passwd thebox
