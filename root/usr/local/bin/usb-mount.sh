@@ -76,7 +76,7 @@ do_mount()
         # Track the mounted drives
         echo "${MOUNT_POINT}:${DEVBASE}" | cat >> "/var/log/usb-mount.track" 
         # Add SAMBA usershare
-        net usershare add ${LABEL} ${MOUNT_POINT} "The Box Network share ${LABEL}" S-1-5-21-2406293210-3172418504-2426979560-1000:F
+        net usershare add ${LABEL} ${MOUNT_POINT} "The Box Network share ${LABEL}" Everyone:F
     fi
 
     ${log} "Mounted ${DEVICE} at ${MOUNT_POINT}"
