@@ -75,6 +75,8 @@ do_mount()
     else
         # Track the mounted drives
         echo "${MOUNT_POINT}:${DEVBASE}" | cat >> "/var/log/usb-mount.track" 
+        # Add SAMBA usershare
+        net usershare add ${LABEL} ${MOUNT_POINT} "The Box Network share ${LABEL}" S-1-5-21-2406293210-3172418504-2426979560-1000:F
     fi
 
     ${log} "Mounted ${DEVICE} at ${MOUNT_POINT}"
@@ -86,9 +88,12 @@ do_unmount()
         ${log} "Warning: ${DEVICE} is not mounted"
     else
         umount -l ${DEVICE}
-  ${log} "Unmounted ${DEVICE} from ${MOUNT_POINT}"
+        ${log} "Unmounted ${DEVICE} from ${MOUNT_POINT}"
         /bin/rmdir "${MOUNT_POINT}"
         sed -i.bak "\@${MOUNT_POINT}@d" /var/log/usb-mount.track
+        # Delete SAMBA usershare
+        USERSHARE=${MOUNT_POINT##*/}
+        net usershare delete ${USERSHARE,,}
     fi
 
 
