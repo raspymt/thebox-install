@@ -22,7 +22,7 @@ mkdir /media
 # update packages
 pacman -Syu --noconfirm
 # install packages
-pacman -S --noconfirm samba hostapd transmission-cli minidlna mpd
+pacman -S --noconfirm samba avahi hostapd transmission-cli minidlna mpd
 
 #################
 # SOURCES FILES #
@@ -67,6 +67,12 @@ touch /usr/local/samba/var/log.nmbd
 systemctl enable --now smbd.service
 systemctl enable --now nmbd.service
 
+#########
+# AVAHI #
+#########
+# start/enable avahi-daemon service
+systemctl enable --now avahi-daemon.service
+
 ####################
 # TRANSMISSION-CLI #
 ####################
@@ -90,7 +96,4 @@ systemctl enable --now mpd.service
 ##########
 # REBOOT #
 ##########
-# reload systemd daemon
-systemctl daemon-reload
-
 systemctl reboot
