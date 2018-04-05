@@ -45,7 +45,7 @@
     "rpc-enabled": true,
     "rpc-host-whitelist": "",
     "rpc-host-whitelist-enabled": true,
-    "rpc-password": "$#ttThHEboX;06",
+    "rpc-password": "thebox",
     "rpc-port": 9091,
     "rpc-url": "/transmission/",
     "rpc-username": "thebox",
