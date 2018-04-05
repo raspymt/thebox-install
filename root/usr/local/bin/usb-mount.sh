@@ -76,7 +76,8 @@ do_mount()
         # Track the mounted drives
         echo "${MOUNT_POINT}:${DEVBASE}" | cat >> "/var/log/usb-mount.track" 
         # Add SAMBA usershare
-        net usershare add ${LABEL} ${MOUNT_POINT} "The Box Network share ${LABEL}" Everyone:F
+        ACLS=$(pdbedit -L -v | sed -n -e 's/User SID:             //p')
+        net usershare add ${LABEL} ${MOUNT_POINT} "The Box Network share ${LABEL}" ${ACLS}:F
     fi
 
     ${log} "Mounted ${DEVICE} at ${MOUNT_POINT}"
