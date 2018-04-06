@@ -35,6 +35,13 @@ chown thebox:thebox -R /home/thebox
 systemctl daemon-reload
 # reload udev rules
 udevadm control --reload-rules
+# systemd service aware
+systemctl enable wpa_supplicant@wlan0.service
+systemctl enable hostapd.service
+systemctl disable wpa_supplicant@wlan0.service
+systemctl disable hostapd.service
+# reload systemd daemon
+systemctl daemon-reload
 
 ###########
 # NETWORK #
