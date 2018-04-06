@@ -22,7 +22,7 @@ mkdir /media
 # update packages
 pacman -Syu --noconfirm
 # install packages
-pacman -S --noconfirm ntfs-3g samba avahi hostapd ntp transmission-cli minidlna mpd
+pacman -S --noconfirm ntfs-3g samba avahi hostapd ntp transmission-cli minidlna mpd nodejs-lts-carbon
 
 #################
 # SOURCES FILES #

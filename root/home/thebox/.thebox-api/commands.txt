@@ -1,0 +1,22 @@
+# HOSTAPD
+# generate new encrypted password with wpa_passphrase
+wpa_passphrase "ssid" "password" | grep -P  "^\tpsk" | cut -d = -f 2 | awk '{print "00:00:00:00:00:00 " $1}' > /etc/hostapd/hostapd-psk
+
+# Print SSID name
+sed -n '/^ssid=/p' /etc/hostapd/hostapd.conf
+
+# Replace SSID name
+sed -ie 's/^ssid=.*/ssid=New ssid name/' /etc/hostapd/hostapd.conf
+
+#change samba password
+echo -e 'password\npassword' | smbpasswd -s thebox
+
+# TRANSMISSION
+# get username
+sed -n '/   "rpc-username": /p' /home/thebox/.config/transmission-daemon/settings.json
+
+# replace username
+sed -ie 's/   "rpc-username": .*/   "rpc-username": "thebox",/' /home/thebox/.config/transmission-daemon/settings.json
+
+# replace password
+sed -ie 's/   "rpc-password": .*/   "rpc-password": "password",/' /home/thebox/.config/transmission-daemon/settings.json

@@ -1,0 +1,18 @@
+[Unit]
+Description=The Box API server
+After=mpd.service transmission.service minidlna.service smbd.service
+
+[Service]
+ExecStart=/usr/bin/node --v8-pool-size=4 /home/thebox/.thebox-api/server/index.js
+WorkingDirectory=/home/thebox/.thebox-api
+Restart=always
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+#SyslogIdentifier=thebox-api-server
+#User=<alternate user>
+#Group=<alternate group>
+Environment=NODE_ENV=production PORT=80
+
+[Install]
+WantedBy=multi-user.target
