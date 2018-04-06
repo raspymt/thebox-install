@@ -22,13 +22,15 @@ mkdir /media
 # update packages
 pacman -Syu --noconfirm
 # install packages
-pacman -S --noconfirm samba avahi hostapd ntp transmission-cli minidlna mpd
+pacman -S --noconfirm ntfs-3g samba avahi hostapd ntp transmission-cli minidlna mpd
 
 #################
 # SOURCES FILES #
 #################
 # copy source files
 cp --recursive --force root/* /
+# set user on thebox home directory
+chown thebox:thebox -R /home/thebox
 # reload systemd daemon
 systemctl daemon-reload
 # reload udev rules
