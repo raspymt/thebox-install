@@ -75,7 +75,7 @@ do_mount()
     else
         # Track the mounted drives
         echo "${MOUNT_POINT}:${DEVBASE}" | cat >> "/var/log/usb-mount.track" 
-        if [[ ${ID_FS_TYPE} == "ext4" ]]; then
+        if [[ ${ID_FS_TYPE} == "ext2" ]] || [[ ${ID_FS_TYPE} == "ext3" ]] || [[ ${ID_FS_TYPE} == "ext4" ]]; then
             # chown thebox ${MOUNT_POINT}
             chgrp thebox ${MOUNT_POINT}
             chmod g+w ${MOUNT_POINT}
