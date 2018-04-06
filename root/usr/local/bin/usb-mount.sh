@@ -56,7 +56,7 @@ do_mount()
 
     MOUNT_POINT="/media/${DEV_LABEL}"
 
-    ${log} "Mount point: ${MOUNT_POINT}"
+    ${log} "Mount point: ${MOUNT_POINT}, filesystem: ${ID_FS_TYPE}"
 
     mkdir -p ${MOUNT_POINT}
 
@@ -65,7 +65,7 @@ do_mount()
 
     # File system type specific mount options
     if [[ ${ID_FS_TYPE} == "vfat" ]]; then
-        OPTS+=",users,gid=100,umask=000,shortname=mixed,utf8=1,flush"
+        OPTS+=",users,uid=thebox,umask=000,shortname=mixed,utf8=1,flush"
     fi
 
     if ! mount -o ${OPTS} ${DEVICE} ${MOUNT_POINT}; then
@@ -75,12 +75,15 @@ do_mount()
     else
         # Track the mounted drives
         echo "${MOUNT_POINT}:${DEVBASE}" | cat >> "/var/log/usb-mount.track" 
+        if [[ ${ID_FS_TYPE} == "ext4" ]]; then
+            chown thebox ${MOUNT_POINT}
+        fi
         # Add SAMBA usershare
         ACLS=$(pdbedit -L -v | sed -n -e 's/User SID:             //p')
-        net usershare add ${LABEL} ${MOUNT_POINT} "The Box Network share ${LABEL}" ${ACLS}:F
+        net usershare add ${DEV_LABEL} ${MOUNT_POINT} "The Box Network share ${DEV_LABEL}" ${ACLS}:F
     fi
 
-    ${log} "Mounted ${DEVICE} at ${MOUNT_POINT}"
+    ${log} "Mounted ${DEVICE} at ${MOUNT_POINT} with filesystem ${ID_FS_TYPE}"
 }
 
 do_unmount()
