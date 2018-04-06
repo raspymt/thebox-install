@@ -65,7 +65,7 @@ do_mount()
 
     # File system type specific mount options
     if [[ ${ID_FS_TYPE} == "vfat" ]]; then
-        OPTS+=",users,uid=thebox,umask=000,shortname=mixed,utf8=1,flush"
+        OPTS+=",users,gid=nobody,umask=000,shortname=mixed,utf8=1,flush"
     fi
 
     if ! mount -o ${OPTS} ${DEVICE} ${MOUNT_POINT}; then
@@ -76,7 +76,9 @@ do_mount()
         # Track the mounted drives
         echo "${MOUNT_POINT}:${DEVBASE}" | cat >> "/var/log/usb-mount.track" 
         if [[ ${ID_FS_TYPE} == "ext4" ]]; then
-            chown thebox ${MOUNT_POINT}
+            # chown thebox ${MOUNT_POINT}
+            chgrp thebox ${MOUNT_POINT}
+            chmod g+w ${MOUNT_POINT}
         fi
         # Add SAMBA usershare
         ACLS=$(pdbedit -L -v | sed -n -e 's/User SID:             //p')
