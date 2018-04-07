@@ -22,26 +22,21 @@ mkdir /media
 # update packages
 pacman -Syu --noconfirm
 # install packages
-pacman -S --noconfirm ntfs-3g samba avahi hostapd ntp transmission-cli minidlna mpd nodejs-lts-carbon
+pacman -S --noconfirm ntfs-3g samba avahi hostapd ntp transmission-cli mpd nodejs-lts-carbon git base-devel libexif libjpeg libid3tag flac libvorbis ffmpeg sqlite
 
 #################
 # SOURCES FILES #
 #################
 # copy source files
 cp --recursive --force root/* /
+# create directories
+mmkdir -p /home/thebox/Downloads
 # set user on thebox home directory
 chown thebox:thebox -R /home/thebox
 # reload systemd daemon
 systemctl daemon-reload
 # reload udev rules
 udevadm control --reload-rules
-# systemd service aware
-systemctl enable wpa_supplicant@wlan0.service
-systemctl enable hostapd.service
-systemctl disable wpa_supplicant@wlan0.service
-systemctl disable hostapd.service
-# reload systemd daemon
-systemctl daemon-reload
 
 ###########
 # NETWORK #
@@ -93,12 +88,30 @@ systemctl enable --now avahi-daemon.service
 ####################
 # TRANSMISSION-CLI #
 ####################
-# start/enable minidlna service
+# start/enable transmission service
 systemctl enable --now transmission.service
 
 ############
 # MINIDLNA #
 ############
+# switch to thebox user
+su - thebox
+mmkdir -p /home/thebox/.builds
+# clone repository
+git clone https://git.code.sf.net/p/minidlna/git /home/thebox/.builds/minidlna-git
+# replace icons.c file
+cp --force minidlna/icons.c /home/thebox/.builds/minidlna-git/icons.c
+cd /home/thebox/.builds/minidlna-git
+# compilation
+./autogen.sh
+./configure
+make
+# go back to root user
+exit
+# install minidlna
+make install
+# create minidlna cache directory
+mkdir -p /var/cache/minidlna
 # change minidlna cache directory user and group
 chown minidlna:minidlna /var/cache/minidlna
 # start/enable minidlna service
@@ -109,6 +122,18 @@ systemctl enable --now minidlna.service
 #######
 # start/enable minidlna service
 systemctl enable --now mpd.service
+
+######################
+# TheBox API and SAP #
+######################
+# start/enable TheBox API and SAP service
+systemctl enable --now theboxapi.service
+
+############
+# CLEANING #
+############
+# remove .builds directory
+rm -rf /home/thebox/.builds
 
 ##########
 # REBOOT #
