@@ -13,8 +13,6 @@ echo "Enter thebox user password:"
 passwd thebox
 # remove alarm user
 userdel --force --remove alarm
-# create media directory for mount points
-mkdir /media
 
 #####################################
 # PACKAGES UPGRADE AND INSTALLATION #
@@ -53,8 +51,10 @@ pacman -S --noconfirm alsa-utils \
 # copy source files
 cp --recursive --force root/* /
 # create directories
-mmkdir -p /home/thebox/Downloads
-mmkdir -p /home/thebox/.builds
+mkdir -p /home/thebox/Downloads
+mkdir -p /home/thebox/.builds
+# create media directory for mount points
+mkdir /media
 # set user on thebox home directory
 chown thebox:thebox -R /home/thebox
 # reload systemd daemon
