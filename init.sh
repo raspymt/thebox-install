@@ -22,7 +22,8 @@ mkdir /media
 # update packages
 pacman -Syu --noconfirm
 # install packages
-pacman -S --noconfirm ntfs-3g \
+pacman -S --noconfirm alsa-utils \
+                      ntfs-3g \
                       samba \
                       avahi \
                       hostapd \
