@@ -33,7 +33,6 @@ pacman -S --noconfirm alsa-utils \
                       nodejs-lts-carbon \
                       git \
                       base-devel \
-                      # minidlna dependencies
                       libexif \
                       libjpeg \
                       libid3tag \
@@ -41,13 +40,11 @@ pacman -S --noconfirm alsa-utils \
                       libvorbis \
                       ffmpeg \
                       sqlite \
-                      # upmpdcli dependencies
                       libmpdclient \
                       libmicrohttpd \
                       jsoncpp \
                       curl \
                       expat \
-                      # upmpdcli optional dependency for OpenHome Radio Service
                       python2
 
 #################
