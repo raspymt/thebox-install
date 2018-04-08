@@ -22,7 +22,32 @@ mkdir /media
 # update packages
 pacman -Syu --noconfirm
 # install packages
-pacman -S --noconfirm ntfs-3g samba avahi hostapd ntp transmission-cli mpd nodejs-lts-carbon git base-devel libexif libjpeg libid3tag flac libvorbis ffmpeg sqlite
+pacman -S --noconfirm ntfs-3g \
+                      samba \
+                      avahi \
+                      hostapd \
+                      ntp \
+                      transmission-cli \
+                      mpd \
+                      nodejs-lts-carbon \
+                      git \
+                      base-devel \
+                      # minidlna dependencies
+                      libexif \
+                      libjpeg \
+                      libid3tag \
+                      flac \
+                      libvorbis \
+                      ffmpeg \
+                      sqlite \
+                      # upmpdcli dependencies
+                      libmpdclient \
+                      libmicrohttpd \
+                      jsoncpp \
+                      curl \
+                      expat \
+                      # upmpdcli optional dependency for OpenHome Radio Service
+                      python2
 
 #################
 # SOURCES FILES #
@@ -31,6 +56,7 @@ pacman -S --noconfirm ntfs-3g samba avahi hostapd ntp transmission-cli mpd nodej
 cp --recursive --force root/* /
 # create directories
 mmkdir -p /home/thebox/Downloads
+mmkdir -p /home/thebox/.builds
 # set user on thebox home directory
 chown thebox:thebox -R /home/thebox
 # reload systemd daemon
@@ -96,7 +122,6 @@ systemctl enable --now transmission.service
 ############
 # switch to thebox user
 su - thebox
-mmkdir -p /home/thebox/.builds
 # clone repository
 git clone git://git.code.sf.net/p/minidlna/git /home/thebox/.builds/minidlna-git
 # replace icons.c file
@@ -116,6 +141,25 @@ mkdir -p /var/cache/minidlna
 chown minidlna:minidlna /var/cache/minidlna
 # start/enable minidlna service
 systemctl enable --now minidlna.service
+
+############
+# UPMPDCLI #
+############
+# switch to thebox user
+su - thebox
+# clone repository
+git clone https://github.com/triplem/upmpdcli.git /home/thebox/.builds/upmpdcli-git
+cd /home/thebox/.builds/upmpdcli-git
+# compilation
+./autogen.sh
+./configure
+make
+# go back to root user
+exit
+# install upmpdcli
+make install
+# start/enable upmpdcli service
+systemctl enable --now upmpdcli.service
 
 #######
 # MPD #
