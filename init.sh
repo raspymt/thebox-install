@@ -98,7 +98,7 @@ systemctl enable --now transmission.service
 su - thebox
 mmkdir -p /home/thebox/.builds
 # clone repository
-git clone https://git.code.sf.net/p/minidlna/git /home/thebox/.builds/minidlna-git
+git clone git://git.code.sf.net/p/minidlna/git /home/thebox/.builds/minidlna-git
 # replace icons.c file
 cp --force minidlna/icons.c /home/thebox/.builds/minidlna-git/icons.c
 cd /home/thebox/.builds/minidlna-git
