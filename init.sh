@@ -118,44 +118,38 @@ systemctl enable --now transmission.service
 ############
 # MINIDLNA #
 ############
-# switch to thebox user
-su - thebox
-# clone repository
+# clone minidlna repository
 git clone git://git.code.sf.net/p/minidlna/git /home/thebox/.builds/minidlna-git
-# replace icons.c file
+# copy custom icons
 cp --force minidlna/icons.c /home/thebox/.builds/minidlna-git/icons.c
-cd /home/thebox/.builds/minidlna-git
-# compilation
-./autogen.sh
-./configure
-make
-# go back to root user
-exit
-# install minidlna
-make install
+# set owner and group to thebox
+chown -R thebox:thebox /home/thebox/.builds/minidlna-git
+# autogen, configure and compile
+runuser --command='cd /home/thebox/.builds/minidlna-git && ./autogen.sh && ./configure && make' --login thebox
+# make binary
+cd /home/thebox/.builds/minidlna-git && make install && cd "$OLDPWD"
 # create minidlna cache directory
 mkdir -p /var/cache/minidlna
 # change minidlna cache directory user and group
-chown minidlna:minidlna /var/cache/minidlna
+chown thebox:thebox /var/cache/minidlna
 # start/enable minidlna service
 systemctl enable --now minidlna.service
 
 ############
 # UPMPDCLI #
 ############
-# switch to thebox user
-su - thebox
-# clone repository
+# clone upmpdcli repository
 git clone https://github.com/triplem/upmpdcli.git /home/thebox/.builds/upmpdcli-git
-cd /home/thebox/.builds/upmpdcli-git
-# compilation
-./autogen.sh
-./configure
-make
-# go back to root user
-exit
-# install upmpdcli
-make install
+# set owner and group to thebox
+chown -R thebox:thebox /home/thebox/.builds/upmpdcli-git
+# autogen, configure and compile
+runuser --command='cd /home/thebox/.builds/upmpdcli-git && ./autogen.sh && ./configure && make' --login thebox
+# make binary
+cd /home/thebox/.builds/upmpdcli-git && make install && cd "$OLDPWD"
+# create upmpdcli cache directory
+mkdir -p /var/cache/upmpdcli
+# change upmpdcli cache directory user and group
+chown thebox:thebox /var/cache/upmpdcli
 # start/enable upmpdcli service
 systemctl enable --now upmpdcli.service
 

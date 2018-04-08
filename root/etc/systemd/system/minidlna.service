@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=minidlna
-Group=minidlna
+User=thebox
+Group=thebox
 ExecStart=/usr/local/sbin/minidlnad -S -f /etc/minidlna.conf
 ProtectSystem=full
 ProtectHome=on
