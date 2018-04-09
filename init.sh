@@ -14,9 +14,9 @@ passwd thebox
 # remove alarm user
 userdel --force --remove alarm
 
-##############################
-# RASPBERRY PI B BOOT CONFIG #
-##############################
+################################
+# RASPBERRY PI 3 B BOOT CONFIG #
+################################
 # enable onboard soundcard
 echo 'dtparam=audio=on' >> '/boot/config.txt'
 # remove distortion using the 3.5mm analogue output
