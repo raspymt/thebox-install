@@ -156,6 +156,8 @@ systemctl enable --now upmpdcli.service
 #######
 # MPD #
 #######
+# add mpd user to audio group
+gpasswd -a mpd audio
 # start/enable minidlna service
 systemctl enable --now mpd.service
 
