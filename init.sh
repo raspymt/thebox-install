@@ -14,6 +14,14 @@ passwd thebox
 # remove alarm user
 userdel --force --remove alarm
 
+##############################
+# RASPBERRY PI B BOOT CONFIG #
+##############################
+# enable onboard soundcard
+echo 'dtparam=audio=on' >> '/boot/config.txt'
+# remove distortion using the 3.5mm analogue output
+echo 'audio_pwm_mode=2' >> '/boot/config.txt'
+
 #####################################
 # PACKAGES UPGRADE AND INSTALLATION #
 #####################################
@@ -132,13 +140,16 @@ mkdir -p /var/run/minidlna
 # change minidlna run directory user and group
 chown thebox:thebox /var/run/minidlna
 # start/enable minidlna service
-systemctl enable --now minidlna.service
+systemctl enable minidlna.service
 
 #######
 # MPD #
 #######
 # add mpd user to audio group
 gpasswd -a mpd audio
+# create mpd state file
+touch /var/lib/mpd/state
+chown mpd:mpd /var/lib/mpd/state
 # start/enable mpd service
 systemctl enable --now mpd.service
 
