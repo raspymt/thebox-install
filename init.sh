@@ -139,8 +139,10 @@ chown thebox:thebox /var/cache/minidlna
 mkdir -p /var/run/minidlna
 # change minidlna run directory user and group
 chown thebox:thebox /var/run/minidlna
+# launch minidlna scan
+runuser --command='/usr/local/sbin/minidlnad -R' --login thebox
 # start/enable minidlna service
-systemctl enable minidlna.service
+systemctl enable --now minidlna.service
 
 #######
 # MPD #
