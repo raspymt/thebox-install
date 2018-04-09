@@ -20,30 +20,25 @@ userdel --force --remove alarm
 # update packages
 pacman -Syu --noconfirm
 # install packages
-pacman -S --noconfirm alsa-utils \
-                      ntfs-3g \
-                      samba \
-                      avahi \
-                      hostapd \
-                      ntp \
-                      transmission-cli \
-                      mpd \
-                      nodejs-lts-carbon \
-                      git \
-                      base-devel \
-                      libexif \
-                      libjpeg \
-                      libid3tag \
-                      flac \
-                      libvorbis \
-                      ffmpeg \
-                      sqlite \
-                      libmpdclient \
-                      libmicrohttpd \
-                      jsoncpp \
-                      curl \
-                      expat \
-                      python2
+pacman -S --noconfirm \
+    alsa-utils \
+    ntfs-3g \
+    samba \
+    avahi \
+    hostapd \
+    ntp \
+    transmission-cli \
+    mpd \
+    nodejs-lts-carbon \
+    git \
+    base-devel \
+    libexif \
+    libjpeg \
+    libid3tag \
+    flac \
+    libvorbis \
+    ffmpeg \
+    sqlite
 
 #################
 # SOURCES FILES #
@@ -132,33 +127,19 @@ cd /home/thebox/.builds/minidlna-git && make install && cd "$OLDPWD"
 mkdir -p /var/cache/minidlna
 # change minidlna cache directory user and group
 chown thebox:thebox /var/cache/minidlna
+# create minidlna run directory
+mkdir -p /var/run/minidlna
+# change minidlna run directory user and group
+chown thebox:thebox /var/run/minidlna
 # start/enable minidlna service
 systemctl enable --now minidlna.service
-
-############
-# UPMPDCLI #
-############
-# clone upmpdcli repository
-git clone https://github.com/triplem/upmpdcli.git /home/thebox/.builds/upmpdcli-git
-# set owner and group to thebox
-chown -R thebox:thebox /home/thebox/.builds/upmpdcli-git
-# autogen, configure and compile
-runuser --command='cd /home/thebox/.builds/upmpdcli-git && ./autogen.sh && ./configure && make' --login thebox
-# make binary
-cd /home/thebox/.builds/upmpdcli-git && make install && cd "$OLDPWD"
-# create upmpdcli cache directory
-mkdir -p /var/cache/upmpdcli
-# change upmpdcli cache directory user and group
-chown thebox:thebox /var/cache/upmpdcli
-# start/enable upmpdcli service
-systemctl enable --now upmpdcli.service
 
 #######
 # MPD #
 #######
 # add mpd user to audio group
 gpasswd -a mpd audio
-# start/enable minidlna service
+# start/enable mpd service
 systemctl enable --now mpd.service
 
 ######################
