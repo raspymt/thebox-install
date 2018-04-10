@@ -141,18 +141,15 @@ mkdir -p /var/run/minidlna
 chown thebox:thebox /var/run/minidlna
 # launch minidlna scan
 runuser --command='/usr/local/sbin/minidlnad -R' --login thebox
-# start/enable minidlna service
-systemctl enable --now minidlna.service
+# enable minidlna service, do not start the service
+# minidlna has been launch with minidlnad -R by thebox user
+systemctl enable minidlna.service
 
 #######
 # MPD #
 #######
-# add mpd user to audio group
-gpasswd -a mpd audio
-# create mpd state file
-touch /var/lib/mpd/state
-chown mpd:mpd /var/lib/mpd/state
-# start/enable mpd service
+# add thebox user to audio group
+gpasswd audio -a thebox
 systemctl enable --now mpd.service
 
 ######################
