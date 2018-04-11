@@ -33,6 +33,7 @@ pacman -S --noconfirm \
     ntfs-3g \
     samba \
     avahi \
+    nss-mdns \
     hostapd \
     ntp \
     transmission-cli \
@@ -64,6 +65,12 @@ chown thebox:thebox -R /home/thebox
 systemctl daemon-reload
 # reload udev rules
 udevadm control --reload-rules
+
+##########
+# LOCALE #
+##########
+# generate locale
+locale-gen
 
 ###########
 # NETWORK #
@@ -150,6 +157,8 @@ systemctl enable minidlna.service
 #######
 # add thebox user to audio group
 gpasswd audio -a thebox
+# systemctl enable --now mpd.socket
+systemctl disable mpd.socket
 systemctl enable --now mpd.service
 
 ######################
