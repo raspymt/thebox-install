@@ -164,6 +164,7 @@ systemctl enable --now mpd.service
 ######################
 # TheBox API and SAP #
 ######################
+runuser --command='cd /home/thebox/.theboxapi && npm install && npm install --build-from-source --sqlite=/usr/include'
 # start/enable TheBox API and SAP service
 systemctl enable --now theboxapi.service
 
