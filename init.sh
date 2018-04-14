@@ -48,7 +48,6 @@ pacman -S --noconfirm \
     git \
     base-devel \
     libexif \
-    libjpeg \
     libid3tag \
     flac \
     libvorbis \
