@@ -142,7 +142,8 @@ runuser --command="cd /home/${THEBOX_USER}/.builds && git https://github.com/ras
 # install package
 cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
 # change default DLNA server name
-sed -ie 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
+sed -i 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
+# change presentation 
 # start/enable minidlna service
 systemctl enable --now minidlna.service
 
