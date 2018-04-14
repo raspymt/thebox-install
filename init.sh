@@ -3,14 +3,18 @@
 ########
 # INIT #
 ########
+THEBOX_USER='thebox'
+THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
+
+
 # change root user password
 echo "Change root user password:"
 passwd root
 # add thebox user
-useradd -m thebox
+useradd -m $THEBOX_USER
 # ask for thebox user password
-echo "Enter thebox user password:"
-passwd thebox
+echo "Enter ${THEBOX_USER} user password:"
+passwd $THEBOX_USER
 # remove alarm user
 userdel --force --remove alarm
 
@@ -18,9 +22,9 @@ userdel --force --remove alarm
 # RASPBERRY PI 3 B BOOT CONFIG #
 ################################
 # enable onboard soundcard
-echo 'dtparam=audio=on' >> '/boot/config.txt'
+echo 'dtparam=audio=on' >> /boot/config.txt
 # remove distortion using the 3.5mm analogue output
-echo 'audio_pwm_mode=2' >> '/boot/config.txt'
+echo 'audio_pwm_mode=2' >> /boot/config.txt
 
 #####################################
 # PACKAGES UPGRADE AND INSTALLATION #
@@ -34,11 +38,13 @@ pacman -S --noconfirm \
     samba \
     avahi \
     nss-mdns \
+    dnsmasq \
     hostapd \
     ntp \
     transmission-cli \
     mpd \
     nodejs-lts-carbon \
+    npm \
     git \
     base-devel \
     libexif \
@@ -46,6 +52,7 @@ pacman -S --noconfirm \
     libid3tag \
     flac \
     libvorbis \
+    libjpeg-turbo \
     ffmpeg \
     sqlite
 
@@ -54,13 +61,13 @@ pacman -S --noconfirm \
 #################
 # copy source files
 cp --recursive --force root/* /
-# create directories
-mkdir -p /home/thebox/Downloads
-mkdir -p /home/thebox/.builds
 # create media directory for mount points
 mkdir /media
+# create thebox user directories
+mkdir -p "/home/${THEBOX_USER}/Downloads"
+mkdir -p "/home/${THEBOX_USER}/.builds"
 # set user on thebox home directory
-chown thebox:thebox -R /home/thebox
+chown $THEBOX_USER:$THEBOX_USER -R "/home/${THEBOX_USER}"
 # reload systemd daemon
 systemctl daemon-reload
 # reload udev rules
@@ -69,7 +76,11 @@ udevadm control --reload-rules
 ##########
 # LOCALE #
 ##########
-# generate locale
+# TODO: locales selection
+# generate locales
+echo "en_US.UTF-8 UTF-8"  > /etc/locale.gen
+echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen
+echo "vi_VN UTF-8"       >> /etc/locale.gen
 locale-gen
 
 ###########
@@ -93,10 +104,10 @@ chown root:sambashare /var/lib/samba/usershares
 # so that users in the group sambashare can read, write and execute files
 chmod 1770 /var/lib/samba/usershares
 # add thebox user to sambashare group
-gpasswd sambashare -a thebox
+gpasswd sambashare -a $THEBOX_USER
 # ask for samba thebox user password
-echo "Enter thebox samba password:"
-smbpasswd -a thebox
+echo "Enter ${THEBOX_USER} samba password:"
+smbpasswd -a $THEBOX_USER
 # create log files
 mkdir -p /usr/local/samba/var/
 touch /usr/local/samba/var/log.smbd
@@ -109,7 +120,7 @@ systemctl enable --now nmbd.service
 # TIME #
 ########
 # Set timezone
-timedatectl set-timezone Asia/Ho_Chi_Minh
+timedatectl set-timezone $THEBOX_TIMEZONE
 # start/enable ntpd service
 systemctl enable --now ntpd.service
 
@@ -128,26 +139,30 @@ systemctl enable --now transmission.service
 ############
 # MINIDLNA #
 ############
-# clone minidlna repository
-git clone git://git.code.sf.net/p/minidlna/git /home/thebox/.builds/minidlna-git
 # copy custom icons
-cp --force minidlna/icons.c /home/thebox/.builds/minidlna-git/icons.c
-# set owner and group to thebox
-chown -R thebox:thebox /home/thebox/.builds/minidlna-git
+cp minidlna/icons.c "/home/${THEBOX_USER}/.builds/icons.c"
+chown $THEBOX_USER:$THEBOX_USER "/home/${THEBOX_USER}/.builds/icons.c"
 # autogen, configure and compile
-runuser --command='cd /home/thebox/.builds/minidlna-git && ./autogen.sh && ./configure && make' --login thebox
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone -b v1_2_1 https://git.code.sf.net/p/minidlna/git minidlna && cd minidlna && mv --force ../icons.c ./icons.c && ./autogen.sh && ./configure && make" --login $THEBOX_USER
 # make binary
-cd /home/thebox/.builds/minidlna-git && make install && cd "$OLDPWD"
+cd "/home/${THEBOX_USER}/.builds/minidlna" && make install && cd $OLDPWD
 # create minidlna cache directory
 mkdir -p /var/cache/minidlna
-# change minidlna cache directory user and group
-chown thebox:thebox /var/cache/minidlna
 # create minidlna run directory
 mkdir -p /var/run/minidlna
+# create minidlna log directory
+mkdir -p /var/log/minidlna
+# change minidlna cache directory user and group
+chown $THEBOX_USER:$THEBOX_USER /var/cache/minidlna
+chmod 0755 "/var/cache/minidlna"
 # change minidlna run directory user and group
-chown thebox:thebox /var/run/minidlna
-# launch minidlna scan
-runuser --command='/usr/local/sbin/minidlnad -R' --login thebox
+chown $THEBOX_USER:$THEBOX_USER /var/run/minidlna
+chmod 0755 "/var/run/minidlna"
+# change minidlna log directory user and group
+chown $THEBOX_USER:$THEBOX_USER /var/log/minidlna
+chmod 0755 "/var/log/minidlna"
+# launch minidlna rebuild
+runuser --command="/usr/local/sbin/minidlnad -R" --login $THEBOX_USER
 # enable minidlna service, do not start the service
 # minidlna has been launch with minidlnad -R by thebox user
 systemctl enable minidlna.service
@@ -156,7 +171,7 @@ systemctl enable minidlna.service
 # MPD #
 #######
 # add thebox user to audio group
-gpasswd audio -a thebox
+gpasswd audio -a $THEBOX_USER
 # systemctl enable --now mpd.socket
 systemctl disable mpd.socket
 systemctl enable --now mpd.service
@@ -164,15 +179,17 @@ systemctl enable --now mpd.service
 ######################
 # TheBox API and SAP #
 ######################
-runuser --command='cd /home/thebox/.theboxapi && npm install && npm install --build-from-source --sqlite=/usr/include'
+# install NPM packages
+# build sqlite3 from source
+runuser --command="cd /home/${THEBOX_USER}/.thebox-api && npm install --production --build-from-source --sqlite=/usr/include" --login $THEBOX_USER
 # start/enable TheBox API and SAP service
 systemctl enable --now theboxapi.service
 
 ############
 # CLEANING #
 ############
-# remove .builds directory
-rm -rf /home/thebox/.builds
+# remove .builds directory? What about the updates?
+#rm -rf "/home/${THEBOX_USER}/.builds"
 
 ##########
 # REBOOT #
