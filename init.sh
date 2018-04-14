@@ -135,33 +135,16 @@ systemctl enable --now avahi-daemon.service
 # start/enable transmission service
 systemctl enable --now transmission.service
 
-############
-# MINIDLNA #
-############
-# copy custom icons
-cp minidlna/icons.c "/home/${THEBOX_USER}/.builds/icons.c"
-chown $THEBOX_USER:$THEBOX_USER "/home/${THEBOX_USER}/.builds/icons.c"
-# autogen, configure and compile
-runuser --command="cd /home/${THEBOX_USER}/.builds && git clone -b v1_2_1 https://git.code.sf.net/p/minidlna/git minidlna && cd minidlna && mv --force ../icons.c ./icons.c && ./autogen.sh && ./configure && make" --login $THEBOX_USER
-# make binary
-cd "/home/${THEBOX_USER}/.builds/minidlna" && make install && cd $OLDPWD
-# create minidlna cache directory
-mkdir -p /var/cache/minidlna
-# create minidlna run directory
-mkdir -p /var/run/minidlna
-# create minidlna log directory
-mkdir -p /var/log/minidlna
-# change minidlna cache directory user and group
-chown $THEBOX_USER:$THEBOX_USER /var/cache/minidlna
-chmod 0755 "/var/cache/minidlna"
-# change minidlna run directory user and group
-chown $THEBOX_USER:$THEBOX_USER /var/run/minidlna
-chmod 0755 "/var/run/minidlna"
-# change minidlna log directory user and group
-chown $THEBOX_USER:$THEBOX_USER /var/log/minidlna
-chmod 0755 "/var/log/minidlna"
+###############################
+# MINIDLNA WITH THE BOX ICONS #
+###############################
+runuser --command="cd /home/${THEBOX_USER}/.builds && git https://github.com/raspymt/thebox-minidlna.git thebox-minidlna && cd thebox-minidlna && makepkg" --login $THEBOX_USER
+# install package
+cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
+# replace default DLNA server name
+sed -ie 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
 # launch minidlna rebuild
-runuser --command="/usr/local/sbin/minidlnad -R" --login $THEBOX_USER
+runuser --command="/usr/local/sbin/minidlnad -R" --login minidlna
 # enable minidlna service, do not start the service
 # minidlna has been launch with minidlnad -R by thebox user
 systemctl enable minidlna.service
