@@ -146,7 +146,7 @@ systemctl enable --now transmission.service
 ###############################
 runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://github.com/raspymt/thebox-minidlna.git && cd thebox-minidlna && makepkg" --login $THEBOX_USER
 # install package
-cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
+cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U --noconfirm thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
 # change default DLNA server name
 sed -i 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
 # start/enable minidlna service
