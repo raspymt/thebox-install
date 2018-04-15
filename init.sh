@@ -86,14 +86,6 @@ echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen
 echo "vi_VN UTF-8"       >> /etc/locale.gen
 locale-gen
 
-###########
-# NETWORK #
-###########
-# interface eth0
-systemctl enable --now dhcpcd@eth0.service
-# access point for Hostapd
-systemctl enable --now access-point.service
-
 #########
 # SAMBA #
 #########
@@ -117,29 +109,12 @@ smbpasswd -a $THEBOX_USER
 mkdir -p /usr/local/samba/var/
 touch /usr/local/samba/var/log.smbd
 touch /usr/local/samba/var/log.nmbd
-# start/enable samba services
-systemctl enable --now smbd.service
-systemctl enable --now nmbd.service
 
 ########
 # TIME #
 ########
 # Set timezone
 timedatectl set-timezone $THEBOX_TIMEZONE
-# start/enable ntpd service
-systemctl enable --now ntpd.service
-
-#########
-# AVAHI #
-#########
-# start/enable avahi-daemon service
-systemctl enable --now avahi-daemon.service
-
-####################
-# TRANSMISSION-CLI #
-####################
-# start/enable transmission service
-systemctl enable --now transmission.service
 
 ###############################
 # MINIDLNA WITH THE BOX ICONS #
@@ -149,17 +124,12 @@ runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://github.c
 cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U --noconfirm thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
 # change default DLNA server name
 sed -i 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
-# start/enable minidlna service
-systemctl enable --now minidlna.service
 
 #######
 # MPD #
 #######
 # add thebox user to audio group
 gpasswd audio -a $THEBOX_USER
-# systemctl enable --now mpd.socket
-systemctl disable mpd.socket
-systemctl enable --now mpd.service
 
 ######################
 # TheBox API and SAP #
@@ -169,14 +139,29 @@ runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}
 # clone repository thebox-sap, install NPM packages prod and dev, build nuxt and remove NPM dev packages
 # need to remove NPM dev modules with 'npm prune --production' ?
 runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && npm install && npm run build" --login $THEBOX_USER
-# start/enable TheBox API and SAP service
-systemctl enable --now theboxapi.service
 
 ############
 # CLEANING #
 ############
 # remove .builds directory? What about the updates?
 #rm -rf "/home/${THEBOX_USER}/.builds"
+
+
+#########################
+# START/ENABLE SERVICES #
+#########################
+systemctl enable --now \
+    dhcpcd@eth0.service \
+    access-point.service \
+    smbd.service \
+    nmbd.service \
+    ntpd.service \
+    avahi-daemon.service \
+    transmission.service \
+    minidlna.service \
+    mpd.service \
+    theboxapi.service
+
 
 ##########
 # REBOOT #
