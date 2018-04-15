@@ -16,7 +16,7 @@ passwd root
 useradd -m $THEBOX_USER
 # ask for thebox user password
 echo "###############################"
-echo "# Enter ${THEBOX_USER} user password: #"
+echo "# Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') user password: #"
 echo "###############################"
 passwd $THEBOX_USER
 # remove alarm user
@@ -110,7 +110,7 @@ chmod 1770 /var/lib/samba/usershares
 gpasswd sambashare -a $THEBOX_USER
 # ask for samba thebox user password
 echo "################################"
-echo "# Enter ${THEBOX_USER} samba password: #"
+echo "# Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') samba password: #"
 echo "################################"
 smbpasswd -a $THEBOX_USER
 # create log files
