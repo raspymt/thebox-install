@@ -8,12 +8,16 @@ THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 
 
 # change root user password
-echo "Change root user password:"
+echo "#########################"
+echo "# Change ROOT password: #"
+echo "#########################"
 passwd root
 # add thebox user
 useradd -m $THEBOX_USER
 # ask for thebox user password
-echo "Enter ${THEBOX_USER} user password:"
+echo "###############################"
+echo "# Enter ${THEBOX_USER} user password: #"
+echo "###############################"
 passwd $THEBOX_USER
 # remove alarm user
 userdel --force --remove alarm
@@ -105,7 +109,9 @@ chmod 1770 /var/lib/samba/usershares
 # add thebox user to sambashare group
 gpasswd sambashare -a $THEBOX_USER
 # ask for samba thebox user password
-echo "Enter ${THEBOX_USER} samba password:"
+echo "################################"
+echo "# Enter ${THEBOX_USER} samba password: #"
+echo "################################"
 smbpasswd -a $THEBOX_USER
 # create log files
 mkdir -p /usr/local/samba/var/
