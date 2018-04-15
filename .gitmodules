@@ -1,3 +1,0 @@
-[submodule "root/home/thebox/.thebox-api"]
-	path = root/home/thebox/.thebox-api
-	url = https://github.com/raspymt/thebox-api.git
