@@ -126,6 +126,10 @@ runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://github.c
 cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U --noconfirm thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
 # change default DLNA server name
 sed -i 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
+# change default media dir
+sed -i 's/media_dir=\/opt/media_dir=\/media/' /etc/minidlna.conf
+# launch a rebuild
+/usr/bin/minidlnad -R
 
 #######
 # MPD #
