@@ -1,10 +1,10 @@
 [Unit]
 Description=The Box API server
-After=mpd.service transmission.service minidlna.service smbd.service
+After=mpd.service mpd.socket transmission.service minidlna.service smbd.service nmbd.service
 
 [Service]
-ExecStart=/usr/bin/node --v8-pool-size=4 /home/thebox/.thebox-api/server/index.js
-WorkingDirectory=/home/thebox/.thebox-api
+ExecStart=/usr/bin/node --v8-pool-size=4 /home/thebox/.thebox/thebox-api/server/index.js
+WorkingDirectory=/home/thebox/.thebox/thebox-api
 Restart=always
 RestartSec=5
 StandardOutput=syslog

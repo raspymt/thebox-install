@@ -144,7 +144,7 @@ systemctl enable --now transmission.service
 ###############################
 # MINIDLNA WITH THE BOX ICONS #
 ###############################
-runuser --command="cd /home/${THEBOX_USER}/.builds && git https://github.com/raspymt/thebox-minidlna.git thebox-minidlna && cd thebox-minidlna && makepkg" --login $THEBOX_USER
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://github.com/raspymt/thebox-minidlna.git && cd thebox-minidlna && makepkg" --login $THEBOX_USER
 # install package
 cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
 # change default DLNA server name
@@ -164,9 +164,11 @@ systemctl enable --now mpd.service
 ######################
 # TheBox API and SAP #
 ######################
-# install NPM packages
-# build sqlite3 from source
-runuser --command="cd /home/${THEBOX_USER}/.thebox-api && npm install --production --build-from-source --sqlite=/usr/include" --login $THEBOX_USER
+# clone repository thebox-api, install NPM packages for production and build sqlite3 from source
+runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production --build-from-source --sqlite=/usr/include" --login $THEBOX_USER
+# clone repository thebox-sap, install NPM packages prod and dev, build nuxt and remove NPM dev packages
+# need to remove NPM dev modules with 'npm prune --production' ?
+runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && npm install && npm run build" --login $THEBOX_USER
 # start/enable TheBox API and SAP service
 systemctl enable --now theboxapi.service
 
