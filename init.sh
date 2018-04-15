@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
-########
-# INIT #
-########
+#############
+# VARIABLES #
+#############
 THEBOX_USER='thebox'
 THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 
-
+#########
+# USERS #
+#########
 # change root user password
 echo "#########################"
 echo "# Change ROOT password: #"
@@ -146,7 +148,6 @@ runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.c
 # remove .builds directory? What about the updates?
 #rm -rf "/home/${THEBOX_USER}/.builds"
 
-
 #########################
 # START/ENABLE SERVICES #
 #########################
@@ -161,7 +162,6 @@ systemctl enable --now \
     minidlna.service \
     mpd.service \
     theboxapi.service
-
 
 ##########
 # REBOOT #
