@@ -39,6 +39,7 @@ echo 'audio_pwm_mode=2' >> /boot/config.txt
 pacman -Syu --noconfirm
 # install packages
 pacman -S --noconfirm \
+    openssl \
     alsa-utils \
     ntfs-3g \
     samba \
@@ -48,6 +49,7 @@ pacman -S --noconfirm \
     ntp \
     transmission-cli \
     mpd \
+    libmpdclient \
     nodejs-lts-carbon \
     npm \
     git \
@@ -156,6 +158,13 @@ sed -i 's/media_dir=\/opt/media_dir=\/media/' /etc/minidlna.conf
 # add thebox user to audio group
 gpasswd audio -a $THEBOX_USER
 
+########
+# YMPD #
+########
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/ympd.git && cd ympd && makepkg" --login $THEBOX_USER
+# install package
+cd "/home/${THEBOX_USER}/.builds/ympd" && pacman -U --noconfirm ympd*.pkg.tar.xz && cd $OLDPWD
+
 ######################
 # TheBox API and SAP #
 ######################
@@ -184,6 +193,7 @@ systemctl enable --now \
     transmission.service \
     minidlna.service \
     mpd.service \
+    ympd.service \
     theboxapi.service
 
 ##################
