@@ -44,7 +44,6 @@ pacman -S --noconfirm \
     samba \
     avahi \
     nss-mdns \
-    dnsmasq \
     hostapd \
     ntp \
     transmission-cli \
@@ -59,7 +58,27 @@ pacman -S --noconfirm \
     libvorbis \
     libjpeg-turbo \
     ffmpeg \
-    sqlite
+    sqlite \
+    wget \
+    fuse2 \
+    libarchive \
+    vala \
+    oniguruma \
+    libevent \
+    cmake \
+    libldap \
+    libmariadbclient \
+    postgresql-libs \
+    jansson \
+    glib2 \
+    freetype2 \
+    libmemcached \
+    openjpeg2 \
+    python2 \
+    python2-simplejson \
+    python2-gobject2 \
+    python2-virtualenv \
+    python2-setuptools
 
 #################
 # SOURCES FILES #
@@ -166,6 +185,53 @@ systemctl enable --now \
     minidlna.service \
     mpd.service \
     theboxapi.service
+
+##################
+# SEAFILE SERVER #
+##################
+# DEPENDENCIES FROM AUR
+# libevhtp-seafile
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/libevhtp-seafile.git libevhtp-seafile && cd libevhtp-seafile && makepkg" --login $THEBOX_USER
+# install package
+cd "/home/${THEBOX_USER}/.builds/libevhtp-seafile" && pacman -U libevhtp-seafile*.pkg.tar.xz && cd $OLDPWD
+
+# libsearpc
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/libsearpc.git libsearpc && cd libsearpc && makepkg" --login $THEBOX_USER
+# install package
+cd "/home/${THEBOX_USER}/.builds/libsearpc" && pacman -U libsearpc*.pkg.tar.xz && cd $OLDPWD
+
+# ccnet-server
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/ccnet-server.git ccnet-server && cd ccnet-server && makepkg" --login $THEBOX_USER
+# install package
+cd "/home/${THEBOX_USER}/.builds/ccnet-server" && pacman -U ccnet-server*.pkg.tar.xz && cd $OLDPWD
+
+# seafile-server
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/seafile-server.git seafile-server && cd seafile-server && makepkg" --login $THEBOX_USER
+# install package
+cd "/home/${THEBOX_USER}/.builds/seafile-server" && pacman -U seafile-server*.pkg.tar.xz && cd $OLDPWD
+
+# seahub
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/seahub.git seahub && cd seahub && makepkg" --login $THEBOX_USER
+# install package
+cd "/home/${THEBOX_USER}/.builds/seahub" && pacman -U seahub*.pkg.tar.xz && cd $OLDPWD
+
+# webdav support
+# python2-seafobj
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/python2-seafobj.git python2-seafobj && cd python2-seafobj && makepkg" --login $THEBOX_USER
+# install package
+cd "/home/${THEBOX_USER}/.builds/python2-seafobj" && pacman -U python2-seafobj*.pkg.tar.xz && cd $OLDPWD
+
+# python2-wsgidav-seafile
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/python2-wsgidav-seafile.git python2-wsgidav-seafile && cd python2-wsgidav-seafile && makepkg" --login $THEBOX_USER
+# install package
+cd "/home/${THEBOX_USER}/.builds/python2-wsgidav-seafile" && pacman -U python2-wsgidav-seafile*.pkg.tar.xz && cd $OLDPWD
+
+# SETUP THE SERVER
+useradd -m -r -d /srv/seafile -s /usr/bin/nologin seafile
+SEAFILE_SERVER_VERSION=$(pacman -Qi seafile-server | grep 'Version' | cut -d ':' -f 2 | cut -d ' ' -f 2 | cut -d '-' -f 1)
+su - seafile -s /bin/sh --command="mkdir -p /srv/seafile/${THEBOX_USER}/seafile-server && cd /srv/seafile/${THEBOX_USER} && wget -P seafile-server https://github.com/haiwen/seahub/archive/v${SEAFILE_SERVER_VERSION}-server.tar.gz && tar -xz -C seafile-server -f seafile-server/v${SEAFILE_SERVER_VERSION}-server.tar.gz && mv seafile-server/seahub-${SEAFILE_SERVER_VERSION}-server seafile-server/seahub && seafile-admin setup"
+systemctl enable --now "seafile-server@${THEBOX_USER}"
+su - seafile -s /bin/sh --command="cd /srv/seafile/${THEBOX_USER} && seafile-admin create-admin"
 
 ##########
 # REBOOT #
