@@ -188,6 +188,7 @@ systemctl enable --now \
 
 ##################
 # SEAFILE SERVER #
+# use sqlite     #
 ##################
 # DEPENDENCIES FROM AUR
 # libevhtp-seafile
@@ -215,16 +216,16 @@ runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.arch
 # install package
 cd "/home/${THEBOX_USER}/.builds/seahub" && pacman -U seahub*.pkg.tar.xz && cd $OLDPWD
 
-# webdav support
+# WEBDAV SUPPORT
 # python2-seafobj
-runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/python2-seafobj.git python2-seafobj && cd python2-seafobj && makepkg" --login $THEBOX_USER
+#runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/python2-seafobj.git python2-seafobj && cd python2-seafobj && makepkg" --login $THEBOX_USER
 # install package
-cd "/home/${THEBOX_USER}/.builds/python2-seafobj" && pacman -U python2-seafobj*.pkg.tar.xz && cd $OLDPWD
+#cd "/home/${THEBOX_USER}/.builds/python2-seafobj" && pacman -U python2-seafobj*.pkg.tar.xz && cd $OLDPWD
 
 # python2-wsgidav-seafile
-runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/python2-wsgidav-seafile.git python2-wsgidav-seafile && cd python2-wsgidav-seafile && makepkg" --login $THEBOX_USER
+#runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/python2-wsgidav-seafile.git python2-wsgidav-seafile && cd python2-wsgidav-seafile && makepkg" --login $THEBOX_USER
 # install package
-cd "/home/${THEBOX_USER}/.builds/python2-wsgidav-seafile" && pacman -U python2-wsgidav-seafile*.pkg.tar.xz && cd $OLDPWD
+#cd "/home/${THEBOX_USER}/.builds/python2-wsgidav-seafile" && pacman -U python2-wsgidav-seafile*.pkg.tar.xz && cd $OLDPWD
 
 # SETUP THE SERVER
 useradd -m -r -d /srv/seafile -s /usr/bin/nologin seafile
