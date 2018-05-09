@@ -1,0 +1,17 @@
+[Unit]
+Description=minidlna server
+After=network.target
+Conflicts=minidlna.service minidlna-rescan.service
+
+[Service]
+Type=simple
+User=minidlna
+Group=minidlna
+ExecStart=/usr/bin/minidlnad -S -R
+ProtectSystem=full
+ProtectHome=on
+PrivateDevices=on
+NoNewPrivileges=on
+
+[Install]
+WantedBy=multi-user.target

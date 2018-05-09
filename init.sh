@@ -130,8 +130,8 @@ echo "################################"
 smbpasswd -a $THEBOX_USER
 # create log files
 mkdir -p /usr/local/samba/var/
-touch /usr/local/samba/var/log.smbd
-touch /usr/local/samba/var/log.nmbd
+touch /usr/local/samba/var/log.smb
+touch /usr/local/samba/var/log.nmb
 
 ########
 # TIME #
@@ -186,8 +186,8 @@ runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.c
 systemctl enable --now \
     dhcpcd@eth0.service \
     access-point.service \
-    smbd.service \
-    nmbd.service \
+    smb.service \
+    nmb.service \
     ntpd.service \
     avahi-daemon.service \
     transmission.service \
@@ -241,8 +241,10 @@ cd "/home/${THEBOX_USER}/.builds/seahub" && pacman -U seahub*.pkg.tar.xz && cd $
 useradd -m -r -d /srv/seafile -s /usr/bin/nologin seafile
 SEAFILE_SERVER_VERSION=$(pacman -Qi seafile-server | grep 'Version' | cut -d ':' -f 2 | cut -d ' ' -f 2 | cut -d '-' -f 1)
 su - seafile -s /bin/sh --command="mkdir -p /srv/seafile/${THEBOX_USER}/seafile-server && cd /srv/seafile/${THEBOX_USER} && wget -P seafile-server https://github.com/haiwen/seahub/archive/v${SEAFILE_SERVER_VERSION}-server.tar.gz && tar -xz -C seafile-server -f seafile-server/v${SEAFILE_SERVER_VERSION}-server.tar.gz && mv seafile-server/seahub-${SEAFILE_SERVER_VERSION}-server seafile-server/seahub && seafile-admin setup"
-systemctl enable --now "seafile-server@${THEBOX_USER}"
+systemctl start "seafile-server@${THEBOX_USER}"
 su - seafile -s /bin/sh --command="cd /srv/seafile/${THEBOX_USER} && seafile-admin create-admin"
+# not enabled by default
+systemctl stop "seafile-server@${THEBOX_USER}"
 
 ##########
 # REBOOT #

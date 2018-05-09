@@ -1,3 +1,5 @@
+WARNING: Work in progress - DO NOT USE...
+
 # Installation of The Box on Arch linux
 
 ## Requirements
