@@ -35,10 +35,8 @@ echo 'audio_pwm_mode=2' >> /boot/config.txt
 #####################################
 # PACKAGES UPGRADE AND INSTALLATION #
 #####################################
-# update packages
-pacman -Syu --noconfirm
-# install packages
-pacman -S --noconfirm \
+# update and install packages
+pacman -Syu --noconfirm \
     openssl \
     alsa-utils \
     ntfs-3g \
