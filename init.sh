@@ -78,7 +78,8 @@ pacman -Syu --noconfirm \
     python2-simplejson \
     python2-gobject2 \
     python2-virtualenv \
-    python2-setuptools
+    python2-setuptools \
+    bluez bluez-utils bluez-libs pulseaudio-bluetooth pulseaudio-alsa libical
 
 #################
 # SOURCES FILES #
@@ -160,8 +161,18 @@ gpasswd audio -a $THEBOX_USER
 # YMPD #
 ########
 runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/ympd.git && cd ympd && makepkg" --login $THEBOX_USER
-# install package
 cd "/home/${THEBOX_USER}/.builds/ympd" && pacman -U --noconfirm ympd*.pkg.tar.xz && cd $OLDPWD
+
+#############
+# BLUETOOTH #
+#############
+rfkill unblock bluetooth
+# dependency for pi-bluetooth: hciattach-rpi3
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/hciattach-rpi3.git && cd ympd && makepkg" --login $THEBOX_USER
+cd "/home/${THEBOX_USER}/.builds/hciattach-rpi3" && pacman -U --noconfirm hciattach-rpi3*.pkg.tar.xz && cd $OLDPWD
+# pi-bluetooth
+runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/pi-bluetooth.git && cd ympd && makepkg" --login $THEBOX_USER
+cd "/home/${THEBOX_USER}/.builds/pi-bluetooth" && pacman -U --noconfirm pi-bluetooth*.pkg.tar.xz && cd $OLDPWD
 
 ######################
 # TheBox API and SAP #
@@ -192,7 +203,9 @@ systemctl enable --now \
     minidlna.service \
     mpd.service \
     ympd.service \
-    theboxapi.service
+    theboxapi.service \
+    bluetooth.service \
+    brcm43438.service
 
 ##################
 # SEAFILE SERVER #
