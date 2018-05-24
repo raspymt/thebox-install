@@ -6,4 +6,4 @@
     <type>_mpd._tcp</type>
     <port>6600</port>
   </service>
-</service-group
+</service-group>
