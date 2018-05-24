@@ -78,7 +78,8 @@ pacman -Syu --noconfirm \
     python2-simplejson \
     python2-gobject2 \
     python2-virtualenv \
-    python2-setuptools
+    python2-setuptools \
+    nftables
 
 #################
 # SOURCES FILES #
@@ -182,6 +183,7 @@ runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.c
 # START/ENABLE SERVICES #
 #########################
 systemctl enable --now \
+    nftables.service \
     dhcpcd@eth0.service \
     access-point.service \
     smb.service \
