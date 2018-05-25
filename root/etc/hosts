@@ -5,6 +5,3 @@
 
 127.0.0.1       thebox.localdomain      thebox
 ::1             thebox.localdomain      thebox
-
-127.0.0.1       thebox.lan
-::1             thebox.lan

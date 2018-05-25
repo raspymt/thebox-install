@@ -10,6 +10,3 @@ Connect to your Raspberry by SSH, then:
 ```bash
 cd /tmp && pacman -Syu --noconfirm git && git clone https://github.com/raspymt/thebox-install.git && cd thebox-install && ./init.sh
 ```
-## TODO
-- nftables
-- bluetooth connection
