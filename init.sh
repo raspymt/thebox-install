@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-#############
-# VARIABLES #
-#############
+############
+# VARIABLES
+
 THEBOX_USER='thebox'
 THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 
-#########
-# USERS #
-#########
+########
+# USERS
+
 # change root user password
 echo "#########################"
 echo "# Change ROOT password: #"
@@ -24,17 +24,24 @@ passwd $THEBOX_USER
 # remove alarm user
 userdel --force --remove alarm
 
-################################
-# RASPBERRY PI 3 B BOOT CONFIG #
-################################
+###############################
+# RASPBERRY PI 3 B BOOT CONFIG
+
 # enable onboard soundcard
 echo 'dtparam=audio=on' >> /boot/config.txt
 # remove distortion using the 3.5mm analogue output
 echo 'audio_pwm_mode=2' >> /boot/config.txt
 
-#####################################
-# PACKAGES UPGRADE AND INSTALLATION #
-#####################################
+######################
+# LOGS AND TMP IN RAM
+echo "tmpfs    /tmp        tmpfs      defaults,noatime,mode=1777,size=5m    0    0" >> /etc/fstab
+echo "tmpfs    /var/log    tmpfs      defaults,noatime,mode=1777,size=5m    0    0" >> /etc/fstab
+echo "tmpfs    /var/tmp    tmpfs      defaults,noatime,mode=1777,size=1m    0    0" >> /etc/fstab
+
+
+####################################
+# PACKAGES UPGRADE AND INSTALLATION
+
 # update and install packages
 pacman -Syu --noconfirm \
     openssl \
@@ -81,9 +88,9 @@ pacman -Syu --noconfirm \
     python2-setuptools \
     nftables
 
-#################
-# SOURCES FILES #
-#################
+################
+# SOURCES FILES
+
 # copy source files
 cp --recursive --force root/* /
 # create media directory for mount points
@@ -98,9 +105,9 @@ systemctl daemon-reload
 # reload udev rules
 udevadm control --reload-rules
 
-##########
-# LOCALE #
-##########
+#########
+# LOCALE
+
 # TODO: locales selection
 # generate locales
 echo "en_US.UTF-8 UTF-8"  > /etc/locale.gen
@@ -108,9 +115,9 @@ echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen
 echo "vi_VN UTF-8"       >> /etc/locale.gen
 locale-gen
 
-#########
-# SAMBA #
-#########
+########
+# SAMBA
+
 # create samba usershares directory
 mkdir -p /var/lib/samba/usershares
 # create sambashare group
@@ -132,15 +139,15 @@ mkdir -p /usr/local/samba/var/
 touch /usr/local/samba/var/log.smb
 touch /usr/local/samba/var/log.nmb
 
-########
-# TIME #
-########
+#######
+# TIME
+
 # Set timezone
 timedatectl set-timezone $THEBOX_TIMEZONE
 
-###############################
-# MINIDLNA WITH THE BOX ICONS #
-###############################
+###########
+# MINIDLNA
+
 runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://github.com/raspymt/thebox-minidlna.git && cd thebox-minidlna && makepkg" --login $THEBOX_USER
 # install package
 cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U --noconfirm thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
@@ -152,21 +159,21 @@ sed -i 's/media_dir=\/opt/media_dir=\/media/' /etc/minidlna.conf
 /usr/bin/minidlnad -R
 
 #######
-# MPD #
-#######
+# MPD
+
 # add thebox user to audio group
 gpasswd audio -a $THEBOX_USER
 
 ########
-# YMPD #
-########
+# YMPD
+
 runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/ympd.git && cd ympd && makepkg" --login $THEBOX_USER
 # install package
 cd "/home/${THEBOX_USER}/.builds/ympd" && pacman -U --noconfirm ympd*.pkg.tar.xz && cd $OLDPWD
 
 ######################
-# TheBox API and SAP #
-######################
+# TheBox API and SAP
+
 # clone repository thebox-api, install NPM packages for production and build sqlite3 from source
 runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production --build-from-source --sqlite=/usr/include" --login $THEBOX_USER
 # clone repository thebox-sap, install NPM packages prod and dev, build nuxt and remove NPM dev packages
@@ -174,14 +181,14 @@ runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}
 runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && npm install && npm run build" --login $THEBOX_USER
 
 ############
-# CLEANING #
-############
+# CLEANING
+
 # remove .builds directory? What about the updates?
 #rm -rf "/home/${THEBOX_USER}/.builds"
 
 #########################
-# START/ENABLE SERVICES #
-#########################
+# START/ENABLE SERVICES
+
 systemctl enable --now \
     nftables.service \
     dhcpcd@eth0.service \
@@ -197,9 +204,8 @@ systemctl enable --now \
     theboxapi.service
 
 ##################
-# SEAFILE SERVER #
-# use sqlite     #
-##################
+# SEAFILE SERVER
+
 # DEPENDENCIES FROM AUR
 # libevhtp-seafile
 runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/libevhtp-seafile.git libevhtp-seafile && cd libevhtp-seafile && makepkg" --login $THEBOX_USER
@@ -247,6 +253,6 @@ su - seafile -s /bin/sh --command="cd /srv/seafile/${THEBOX_USER} && seafile-adm
 systemctl stop "seafile-server@${THEBOX_USER}"
 
 ##########
-# REBOOT #
-##########
+# REBOOT
+
 systemctl reboot
