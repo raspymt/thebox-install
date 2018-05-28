@@ -1,25 +1,27 @@
 #!/usr/bin/env bash
 
-############
 # VARIABLES
-
+############
 THEBOX_USER='thebox'
 THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
+
+##############
+# LOGS IN RAM
+
+#echo "tmpfs   /var/log     tmpfs      rw,size=5m,nr_inodes=5k,noexec,nodev,nosuid,uid=${THEBOX_USER},gid=${THEBOX_USER},mode=1700 0 0" >> /etc/fstab
+echo "tmpfs /var/log tmpfs defaults,noatime,nosuid,mode=0755,size=10m 0 0" >> /etc/fstab
+mount -o remount /
 
 ########
 # USERS
 
 # change root user password
-echo "#########################"
-echo "# Change ROOT password: #"
-echo "#########################"
+echo "Change ROOT password:"
 passwd root
 # add thebox user
 useradd -m $THEBOX_USER
 # ask for thebox user password
-echo "###############################"
-echo "# Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') user password: #"
-echo "###############################"
+echo "Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') user password:"
 passwd $THEBOX_USER
 # remove alarm user
 userdel --force --remove alarm
@@ -31,13 +33,6 @@ userdel --force --remove alarm
 echo 'dtparam=audio=on' >> /boot/config.txt
 # remove distortion using the 3.5mm analogue output
 echo 'audio_pwm_mode=2' >> /boot/config.txt
-
-######################
-# LOGS AND TMP IN RAM
-echo "tmpfs    /tmp        tmpfs      defaults,noatime,mode=1777,size=5m    0    0" >> /etc/fstab
-echo "tmpfs    /var/log    tmpfs      defaults,noatime,mode=1777,size=5m    0    0" >> /etc/fstab
-echo "tmpfs    /var/tmp    tmpfs      defaults,noatime,mode=1777,size=1m    0    0" >> /etc/fstab
-
 
 ####################################
 # PACKAGES UPGRADE AND INSTALLATION
@@ -153,6 +148,8 @@ runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://github.c
 cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U --noconfirm thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
 # change default DLNA server name
 sed -i 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
+# disable logs
+sed -i 's/#log_level=general,artwork,database,inotify,scanner,metadata,http,ssdp,tivo=warn/log_level=general=off,artwork=off,database=off,inotify=off,scanner=off,metadata=off,http=off,ssdp=off,tivo=off/' /etc/minidlna.conf
 # change default media dir
 sed -i 's/media_dir=\/opt/media_dir=\/media/' /etc/minidlna.conf
 # launch a rebuild
