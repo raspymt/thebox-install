@@ -8,9 +8,22 @@ THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 ##############
 # LOGS IN RAM
 
-#echo "tmpfs   /var/log     tmpfs      rw,size=5m,nr_inodes=5k,noexec,nodev,nosuid,uid=${THEBOX_USER},gid=${THEBOX_USER},mode=1700 0 0" >> /etc/fstab
-echo "tmpfs /var/log tmpfs defaults,noatime,nosuid,mode=0755,size=10m 0 0" >> /etc/fstab
-mount -o remount /
+#echo "tmpfs /var/log tmpfs defaults,noatime,nosuid,mode=0755,size=10m 0 0" >> /etc/fstab
+#mount -o remount /
+
+###########
+# HOSTNAME
+
+echo $THEBOX_USER > /etc/hostname
+
+########
+# HOSTS
+
+echo "127.0.0.1 localhost.localdomain localhost" > /etc/hosts
+echo "::1 localhost.localdomain localhost" >> /etc/hosts
+echo "127.0.0.1 ${THEBOX_USER}.localdomain ${THEBOX_USER}" >> /etc/hosts
+echo "::1 ${THEBOX_USER}.localdomain ${THEBOX_USER}" >> /etc/hosts
+
 
 ########
 # USERS
