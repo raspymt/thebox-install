@@ -8,13 +8,19 @@ THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 ##############
 # LOGS IN RAM
 
-#echo "tmpfs /var/log tmpfs defaults,noatime,nosuid,mode=0755,size=10m 0 0" >> /etc/fstab
-#mount -o remount /
+echo "tmpfs /var/log tmpfs nodev,nosuid,noatime,mode=1777,size=20m 0 0" >> /etc/fstab
+mount -o remount /
+
+#######
+# TIME
+
+# Set timezone
+timedatectl set-timezone $THEBOX_TIMEZONE
 
 ###########
 # HOSTNAME
 
-echo $THEBOX_USER > /etc/hostname
+hostnamectl set-hostname $THEBOX_USER
 
 ########
 # HOSTS
@@ -24,6 +30,15 @@ echo "::1 localhost.localdomain localhost" >> /etc/hosts
 echo "127.0.0.1 ${THEBOX_USER}.localdomain ${THEBOX_USER}" >> /etc/hosts
 echo "::1 ${THEBOX_USER}.localdomain ${THEBOX_USER}" >> /etc/hosts
 
+#########
+# LOCALE
+
+# TODO: locales selection
+# generate locales
+echo "en_US.UTF-8 UTF-8"  > /etc/locale.gen
+echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen
+echo "vi_VN UTF-8"       >> /etc/locale.gen
+locale-gen
 
 ########
 # USERS
@@ -113,16 +128,6 @@ systemctl daemon-reload
 # reload udev rules
 udevadm control --reload-rules
 
-#########
-# LOCALE
-
-# TODO: locales selection
-# generate locales
-echo "en_US.UTF-8 UTF-8"  > /etc/locale.gen
-echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen
-echo "vi_VN UTF-8"       >> /etc/locale.gen
-locale-gen
-
 ########
 # SAMBA
 
@@ -138,20 +143,12 @@ chmod 1770 /var/lib/samba/usershares
 # add thebox user to sambashare group
 gpasswd sambashare -a $THEBOX_USER
 # ask for samba thebox user password
-echo "################################"
-echo "# Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') samba password: #"
-echo "################################"
+echo "# Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') samba password:"
 smbpasswd -a $THEBOX_USER
 # create log files
 mkdir -p /usr/local/samba/var/
 touch /usr/local/samba/var/log.smb
 touch /usr/local/samba/var/log.nmb
-
-#######
-# TIME
-
-# Set timezone
-timedatectl set-timezone $THEBOX_TIMEZONE
 
 ###########
 # MINIDLNA
@@ -253,7 +250,7 @@ cd "/home/${THEBOX_USER}/.builds/seahub" && pacman -U seahub*.pkg.tar.xz && cd $
 # install package
 #cd "/home/${THEBOX_USER}/.builds/python2-wsgidav-seafile" && pacman -U python2-wsgidav-seafile*.pkg.tar.xz && cd $OLDPWD
 
-# SETUP THE SERVER
+# setup Seafile server
 useradd -m -r -d /srv/seafile -s /usr/bin/nologin seafile
 SEAFILE_SERVER_VERSION=$(pacman -Qi seafile-server | grep 'Version' | cut -d ':' -f 2 | cut -d ' ' -f 2 | cut -d '-' -f 1)
 su - seafile -s /bin/sh --command="mkdir -p /srv/seafile/${THEBOX_USER}/seafile-server && cd /srv/seafile/${THEBOX_USER} && wget -P seafile-server https://github.com/haiwen/seahub/archive/v${SEAFILE_SERVER_VERSION}-server.tar.gz && tar -xz -C seafile-server -f seafile-server/v${SEAFILE_SERVER_VERSION}-server.tar.gz && mv seafile-server/seahub-${SEAFILE_SERVER_VERSION}-server seafile-server/seahub && seafile-admin setup"
