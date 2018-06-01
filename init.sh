@@ -212,6 +212,7 @@ systemctl enable --now \
 
 ##################
 # SEAFILE SERVER
+# TODO: cutomizations (view: https://manual.seafile.com/config/seahub_customization.html)
 
 # DEPENDENCIES FROM AUR
 # libevhtp-seafile
