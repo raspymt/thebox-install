@@ -4,6 +4,6 @@
   <name replace-wildcards="yes">The Box SSH on %h</name>
   <service>
     <type>_ssh._tcp</type>
-    <port>22</port>
+    <port>4622</port>
   </service>
 </service-group>

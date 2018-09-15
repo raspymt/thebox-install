@@ -13,4 +13,5 @@ Broadcast = 10.0.0.255
 Hostname=thebox
 
 [DHCPServer]
-DNS                 = 10.0.0.1
+DNS = 8.8.8.8
+DNS = 8.8.4.4
