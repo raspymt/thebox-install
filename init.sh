@@ -16,6 +16,16 @@ set -o nounset
 THEBOX_USER='thebox'
 THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 
+# Helpers
+
+# install package from AUR
+# $1 - the name of the package
+# $2 - the url of the package
+install_aur_package(){
+    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone ${2} ${1} && cd ${1} && makepkg" --login $THEBOX_USER
+    # install package
+    pacman --upgrade --noconfirm /home/$THEBOX_USER/.builds/$1/$1*.pkg.tar.xz
+}
 
 # Set logs to ram
 logs_to_ram() {
@@ -63,6 +73,8 @@ process_users(){
     # ask for thebox user password
     echo "Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') user password:"
     passwd $THEBOX_USER
+    # supplementary groups for thebox user
+    usermod -a -G transmission,audio $THEBOX_USER
     # remove alarm user
     userdel --force --remove alarm    
 }
@@ -73,55 +85,33 @@ rpi_boot_config(){
     echo 'dtparam=audio=on' >> /boot/config.txt
     # remove distortion using the 3.5mm analogue output
     echo 'audio_pwm_mode=2' >> /boot/config.txt
+    # set GPU RAM to minimum (16 MB)
+    # echo 'gpu_mem=16' >> /boot/config.txt
+    sed -i 's/gpu_mem=64/gpu_mem=16/' /boot/config.txt
 }
 
 # Upgrade and install necessary packages
 install_packages(){
     pacman -Syu --noconfirm \
-        sudo \
-        openssl \
         alsa-utils \
-        ntfs-3g \
-        samba \
         avahi \
-        nss-mdns \
+        base-devel \
+        git \
         hostapd \
-        ntp \
-        transmission-cli \
         mpd \
-        libmpdclient \
+        nftables \
         nodejs-lts-carbon \
         npm \
-        git \
-        base-devel \
-        libexif \
-        libid3tag \
-        flac \
-        libvorbis \
-        libjpeg-turbo \
-        ffmpeg \
+        nss-mdns \
+        ntfs-3g \
+        ntp \
+        openssl \
+        samba \
         sqlite \
+        transmission-cli \
         wget \
-        fuse2 \
-        libarchive \
-        vala \
-        oniguruma \
-        libevent \
-        cmake \
-        libldap \
-        libmariadbclient \
-        postgresql-libs \
-        jansson \
-        glib2 \
-        freetype2 \
-        libmemcached \
-        openjpeg2 \
-        python2 \
-        python2-simplejson \
-        python2-gobject2 \
-        python2-virtualenv \
-        python2-setuptools \
-        nftables
+        syncthing
+        #sudo \
 }
 
 # Copy sources files, create necessary directories, set main user directory permissions
@@ -134,6 +124,7 @@ process_source_files(){
     # create thebox user directories
     mkdir -p "/home/${THEBOX_USER}/Downloads"
     mkdir -p "/home/${THEBOX_USER}/.builds"
+    mkdir -p "/home/${THEBOX_USER}/.sync"
     # set user on thebox home directory
     chown $THEBOX_USER:$THEBOX_USER -R "/home/${THEBOX_USER}"
     # reload systemd daemon
@@ -146,7 +137,7 @@ process_source_files(){
 install_minidlna(){
     runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://github.com/raspymt/thebox-minidlna.git && cd thebox-minidlna && makepkg" --login $THEBOX_USER
     # install package as root
-    cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman -U --noconfirm thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
+    cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman --upgrade --noconfirm thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
     # change default DLNA server name
     sed -i 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
     # disable logs
@@ -157,17 +148,24 @@ install_minidlna(){
     /usr/bin/minidlnad -R
 }
 
+# Install Resilio Sync
+install_rslsync(){
+    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/rslsync.git && cd rslsync && makepkg" --login $THEBOX_USER
+    # install package
+    cd "/home/${THEBOX_USER}/.builds/rslsync" && pacman --upgrade --noconfirm rslsync*.pkg.tar.xz && cd $OLDPWD    
+}
+
 # Install YMPD
 install_ympd(){
     runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/ympd.git && cd ympd && makepkg" --login $THEBOX_USER
     # install package
-    cd "/home/${THEBOX_USER}/.builds/ympd" && pacman -U --noconfirm ympd*.pkg.tar.xz && cd $OLDPWD    
+    cd "/home/${THEBOX_USER}/.builds/ympd" && pacman --upgrade --noconfirm ympd*.pkg.tar.xz && cd $OLDPWD    
 }
 
 # Install The Box API
 install_thebox_api(){
     # clone repository thebox-api, install NPM packages for production and build sqlite3 from source
-    runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production --build-from-source --sqlite=/usr/include" --login $THEBOX_USER
+    runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production" --login $THEBOX_USER
 }
 
 # Install The Box SAP
@@ -175,47 +173,6 @@ install_thebox_sap(){
     # clone repository thebox-sap, install NPM packages prod and dev and build nuxt
     # TODO: Do we need to remove NPM dev modules with the command 'npm prune --production'?
     runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && npm install && npm run build" --login $THEBOX_USER
-}
-
-# Install Seafile server
-install_seafile_server(){
-    # TODO: cutomizations (view: https://manual.seafile.com/config/seahub_customization.html)
-
-    # libevhtp-seafile
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/libevhtp-seafile.git libevhtp-seafile && cd libevhtp-seafile && makepkg" --login $THEBOX_USER
-    # install package
-    cd "/home/${THEBOX_USER}/.builds/libevhtp-seafile" && pacman -U libevhtp-seafile*.pkg.tar.xz && cd $OLDPWD
-
-    # libsearpc
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/libsearpc.git libsearpc && cd libsearpc && makepkg" --login $THEBOX_USER
-    # install package
-    cd "/home/${THEBOX_USER}/.builds/libsearpc" && pacman -U libsearpc*.pkg.tar.xz && cd $OLDPWD
-
-    # ccnet-server
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/ccnet-server.git ccnet-server && cd ccnet-server && makepkg" --login $THEBOX_USER
-    # install package
-    cd "/home/${THEBOX_USER}/.builds/ccnet-server" && pacman -U ccnet-server*.pkg.tar.xz && cd $OLDPWD
-
-    # seafile-server
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/seafile-server.git seafile-server && cd seafile-server && makepkg" --login $THEBOX_USER
-    # install package
-    cd "/home/${THEBOX_USER}/.builds/seafile-server" && pacman -U seafile-server*.pkg.tar.xz && cd $OLDPWD
-
-    # seahub
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/seahub.git seahub && cd seahub && makepkg" --login $THEBOX_USER
-    # install package
-    cd "/home/${THEBOX_USER}/.builds/seahub" && pacman -U seahub*.pkg.tar.xz && cd $OLDPWD
-
-    # Webdav support
-    # python2-seafobj
-    #runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/python2-seafobj.git python2-seafobj && cd python2-seafobj && makepkg" --login $THEBOX_USER
-    # install package
-    #cd "/home/${THEBOX_USER}/.builds/python2-seafobj" && pacman -U python2-seafobj*.pkg.tar.xz && cd $OLDPWD
-
-    # python2-wsgidav-seafile
-    #runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/python2-wsgidav-seafile.git python2-wsgidav-seafile && cd python2-wsgidav-seafile && makepkg" --login $THEBOX_USER
-    # install package
-    #cd "/home/${THEBOX_USER}/.builds/python2-wsgidav-seafile" && pacman -U python2-wsgidav-seafile*.pkg.tar.xz && cd $OLDPWD
 }
 
 # Configure Samba
@@ -246,32 +203,22 @@ config_mpd(){
     gpasswd audio -a $THEBOX_USER    
 }
 
-# Configure Seafile server
-config_seafile_server(){
-    # add Seafile user
-    useradd -m -r -d /srv/seafile -s /usr/bin/nologin seafile
-    # get Seafile version number
-    SEAFILE_SERVER_VERSION=$(pacman -Qi seafile-server | awk -F ': ' '/Version/ {print $2}' | cut -d '-' -f 1)
-    # As Seafile user: 
-    # create Seafile server directory, cd into it, download Seahub, extract it and rename the extracted directory
-    # then launch the initial setup
-    su - seafile -s /bin/sh --command="mkdir -p /srv/seafile/${THEBOX_USER}/seafile-server && cd /srv/seafile/${THEBOX_USER} && wget -P seafile-server https://github.com/haiwen/seahub/archive/v${SEAFILE_SERVER_VERSION}-server.tar.gz && tar -xz -C seafile-server -f seafile-server/v${SEAFILE_SERVER_VERSION}-server.tar.gz && mv seafile-server/seahub-${SEAFILE_SERVER_VERSION}-server seafile-server/seahub && seafile-admin setup"
-    # start systemd Seafile server service
-    systemctl start "seafile-server@${THEBOX_USER}"
-    # as Seafile user, cd into Seafile server directory and create an admin user 
-    su - seafile -s /bin/sh --command="cd /srv/seafile/${THEBOX_USER} && seafile-admin create-admin"
-    # Seafile is not enabled by default so we must stop the service 
-    systemctl stop "seafile-server@${THEBOX_USER}"
-}
-
 # Cleaning process
 process_clean(){
     # remove .builds directory? What about the updates?
     rm -rf "/home/${THEBOX_USER}/.builds"
 }
 
+# SSH config
+process_ssh(){
+    echo "Port 4622" >> /etc/ssh/sshd_config
+}
+
 # Start and enable systemd services
 start_enable_services(){
+    # reload services
+    systemctl daemon-reload
+    # enable and start default services
     systemctl enable --now \
         nftables.service \
         dhcpcd@eth0.service \
@@ -314,18 +261,20 @@ main(){
     
     # Packages installation
     install_minidlna
+    install_rslsync
     install_ympd
     install_thebox_api
     install_thebox_sap
-    install_seafile_server
     
     # Configuration
     config_samba
     config_mpd
-    config_seafile_server
     
     # Cleaning
-    #process_clean
+    process_clean
+
+    # SSH config
+    process_ssh
     
     # Start and enable systemd services
     start_enable_services

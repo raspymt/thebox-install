@@ -1,7 +1,5 @@
 [Unit]
 Description=The Box API server
-After=mpd.service mpd.socket transmission.service minidlna.service smbd.service nmbd.service
-OnFailure=sshd.service
 
 [Service]
 ExecStart=/usr/bin/node --v8-pool-size=4 /home/thebox/.thebox/thebox-api/server/index.js
