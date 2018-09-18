@@ -73,8 +73,6 @@ process_users(){
     # ask for thebox user password
     echo "Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') user password:"
     passwd $THEBOX_USER
-    # supplementary groups for thebox user
-    usermod -a -G transmission,audio $THEBOX_USER
     # remove alarm user
     userdel --force --remove alarm    
 }
@@ -110,7 +108,13 @@ install_packages(){
         sqlite \
         transmission-cli \
         wget \
-        syncthing
+        syncthing \
+        libexif \
+        libjpeg \
+        libid3tag \
+        flac \
+        libvorbis \
+        ffmpeg
         #sudo \
 }
 
@@ -157,7 +161,7 @@ install_rslsync(){
 
 # Install YMPD
 install_ympd(){
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/ympd.git && cd ympd && makepkg" --login $THEBOX_USER
+    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/ympd.git && cd ympd && makepkg --ignorearch" --login $THEBOX_USER
     # install package
     cd "/home/${THEBOX_USER}/.builds/ympd" && pacman --upgrade --noconfirm ympd*.pkg.tar.xz && cd $OLDPWD    
 }
@@ -197,12 +201,6 @@ config_samba(){
     touch /usr/local/samba/var/log.nmb    
 }
 
-# Configure MPD
-config_mpd(){
-    # add thebox user to audio group
-    gpasswd audio -a $THEBOX_USER    
-}
-
 # Cleaning process
 process_clean(){
     # remove .builds directory? What about the updates?
@@ -212,6 +210,11 @@ process_clean(){
 # SSH config
 process_ssh(){
     echo "Port 4622" >> /etc/ssh/sshd_config
+}
+
+# Add supplementary groups for thebox user
+add_user_groups(){
+    usermod -a -G audio,transmission $THEBOX_USER
 }
 
 # Start and enable systemd services
@@ -268,13 +271,15 @@ main(){
     
     # Configuration
     config_samba
-    config_mpd
     
     # Cleaning
     process_clean
 
     # SSH config
     process_ssh
+
+    # Supplemantary groups
+    add_user_groups
     
     # Start and enable systemd services
     start_enable_services
