@@ -82,8 +82,8 @@ rpi_boot_config(){
     # remove distortion using the 3.5mm analogue output
     echo 'audio_pwm_mode=2' >> /boot/config.txt
     # set GPU RAM to minimum (16 MB)
-    # echo 'gpu_mem=16' >> /boot/config.txt
-    sed -i 's/gpu_mem=64/gpu_mem=16/' /boot/config.txt
+    echo 'gpu_mem=16' >> /boot/config.txt
+    # sed -i 's/gpu_mem=64/gpu_mem=16/' /boot/config.txt
 }
 
 # Upgrade and install necessary packages
@@ -222,8 +222,8 @@ process_clean(){
 start_enable_services(){
     # reload services
     systemctl daemon-reload
-    # enable and start default services
-    systemctl enable --now \
+    # enable default services
+    systemctl enable \
         nftables.service \
         dhcpcd@eth0.service \
         access-point.service \
