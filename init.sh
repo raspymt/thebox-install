@@ -114,7 +114,8 @@ install_packages(){
         libid3tag \
         flac \
         libvorbis \
-        ffmpeg
+        ffmpeg \
+        cmake
         #sudo \
 }
 
