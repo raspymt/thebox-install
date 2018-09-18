@@ -169,7 +169,7 @@ install_ympd(){
 # Install The Box API
 install_thebox_api(){
     # clone repository thebox-api, install NPM packages for production and build sqlite3 from source
-    runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production" --login $THEBOX_USER
+    runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production --build-from-source --sqlite=/usr/include" --login $THEBOX_USER
 }
 
 # Install The Box SAP
