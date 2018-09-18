@@ -73,8 +73,6 @@ process_users(){
     # ask for thebox user password
     echo "Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') user password:"
     passwd $THEBOX_USER
-    # remove alarm user
-    userdel --force --remove alarm    
 }
 
 # Set raspberry pi 3 b boot config
@@ -202,12 +200,6 @@ config_samba(){
     touch /usr/local/samba/var/log.nmb    
 }
 
-# Cleaning process
-process_clean(){
-    # remove .builds directory? What about the updates?
-    rm -rf "/home/${THEBOX_USER}/.builds"
-}
-
 # SSH config
 process_ssh(){
     echo "Port 4622" >> /etc/ssh/sshd_config
@@ -216,6 +208,14 @@ process_ssh(){
 # Add supplementary groups for thebox user
 add_user_groups(){
     usermod -a -G audio,transmission $THEBOX_USER
+}
+
+# Cleaning process
+process_clean(){
+    # remove .builds directory
+    rm -rf "/home/${THEBOX_USER}/.builds"
+    # remove alarm user
+    userdel --force --remove alarm    
 }
 
 # Start and enable systemd services
@@ -272,15 +272,15 @@ main(){
     
     # Configuration
     config_samba
-    
-    # Cleaning
-    process_clean
 
     # SSH config
     process_ssh
 
     # Supplemantary groups
     add_user_groups
+    
+    # Cleaning
+    process_clean
     
     # Start and enable systemd services
     start_enable_services
