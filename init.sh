@@ -82,8 +82,7 @@ rpi_boot_config(){
     # remove distortion using the 3.5mm analogue output
     echo 'audio_pwm_mode=2' >> /boot/config.txt
     # set GPU RAM to minimum (16 MB)
-    echo 'gpu_mem=16' >> /boot/config.txt
-    # sed -i 's/gpu_mem=64/gpu_mem=16/' /boot/config.txt
+    sed -i 's/gpu_mem=64/gpu_mem=16/' /boot/config.txt
 }
 
 # Upgrade and install necessary packages
@@ -169,8 +168,7 @@ install_ympd(){
 # Install The Box API
 install_thebox_api(){
     # clone repository thebox-api, install NPM packages for production and build sqlite3 from source
-    runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production" --login $THEBOX_USER
-    # runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production --build-from-source --sqlite=/usr/include" --login $THEBOX_USER
+    runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production --build-from-source --sqlite=/usr/include" --login $THEBOX_USER
 }
 
 # Install The Box SAP
@@ -238,6 +236,8 @@ start_enable_services(){
         mpd.service \
         ympd.service \
         theboxapi.service
+
+    systemctl disable systemd-networkd-wait-online.service
 }
 
 # Send reboot signal
