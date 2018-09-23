@@ -68,11 +68,15 @@ process_users(){
     # change root user password
     echo "Change root password:"
     passwd root
+    
     # add thebox user
-    useradd -m $THEBOX_USER
+    useradd --create-home $THEBOX_USER
     # ask for thebox user password
     echo "Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') user password:"
     passwd $THEBOX_USER
+
+    # add theboxapi system user
+    useradd --system --home-dir "/home/${THEBOX_USER}" --groups thebox,wheel theboxapi
 }
 
 # Set raspberry pi 3 b boot config
@@ -81,6 +85,10 @@ rpi_boot_config(){
     echo 'dtparam=audio=on' >> /boot/config.txt
     # remove distortion using the 3.5mm analogue output
     echo 'audio_pwm_mode=2' >> /boot/config.txt
+    # enable the 1.2A current limiter
+    echo 'max_usb_current=1' >> /boot/config.txt
+    # disable rainbow splash screen on boot
+    echo 'disable_splash=1' >> /boot/config.txt
     # set GPU RAM to minimum (16 MB)
     sed -i 's/gpu_mem=64/gpu_mem=16/' /boot/config.txt
 }
@@ -91,8 +99,15 @@ install_packages(){
         alsa-utils \
         avahi \
         base-devel \
+        cmake \
+        ffmpeg \
+        flac \
         git \
         hostapd \
+        libexif \
+        libid3tag \
+        libjpeg \
+        libvorbis \
         mpd \
         nftables \
         nodejs-lts-carbon \
@@ -103,17 +118,10 @@ install_packages(){
         openssl \
         samba \
         sqlite \
-        transmission-cli \
-        wget \
+        sudo \
         syncthing \
-        libexif \
-        libjpeg \
-        libid3tag \
-        flac \
-        libvorbis \
-        ffmpeg \
-        cmake
-        #sudo \
+        transmission-cli \
+        wget
 }
 
 # Copy sources files, create necessary directories, set main user directory permissions
@@ -178,7 +186,7 @@ install_thebox_sap(){
     runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && npm install && npm run build" --login $THEBOX_USER
 }
 
-# Configure Samba
+# Samba configuration 
 config_samba(){
     # create samba usershares directory
     mkdir -p /var/lib/samba/usershares
@@ -200,8 +208,19 @@ config_samba(){
     touch /usr/local/samba/var/log.nmb    
 }
 
-# SSH config
-process_ssh(){
+# Syncthing configuration
+config_syncthing(){
+    sed -i 's/127.0.0.1:8384/0.0.0.0:8384/' "/home/${THEBOX_USER}/.config/syncthing/config.xml"
+}
+
+# Systemd-resolved configuration
+config_systemd_resolved(){
+    echo "MulticastDNS=no" >> /etc/systemd/resolved.conf
+    # echo "FallbackDNS=10.0.0.1 192.168.1.1" >> /etc/systemd/resolved.conf
+}
+
+# SSH configuration
+config_ssh(){
     echo "Port 4622" >> /etc/ssh/sshd_config
 }
 
@@ -273,10 +292,12 @@ main(){
     install_thebox_sap
     
     # Configuration
+    config_systemd_resolved
     config_samba
+    config_syncthing
 
     # SSH config
-    process_ssh
+    config_ssh
 
     # Supplemantary groups
     add_user_groups
