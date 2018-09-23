@@ -2,15 +2,15 @@
 Description=The Box API server
 
 [Service]
-ExecStart=/usr/bin/node --v8-pool-size=4 /home/thebox/.thebox/thebox-api/server/index.js
+ExecStart=sudo /usr/bin/node --v8-pool-size=4 /home/thebox/.thebox/thebox-api/server/index.js
 WorkingDirectory=/home/thebox/.thebox/thebox-api
 Restart=always
 RestartSec=5
 StandardOutput=syslog
 StandardError=syslog
-#SyslogIdentifier=thebox-api-server
-#User=<alternate user>
-#Group=<alternate group>
+SyslogIdentifier=thebox-api-server
+User=theboxapi
+Group=theboxapi
 Environment=NODE_ENV=production PORT=80
 
 [Install]
