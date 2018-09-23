@@ -1,7 +1,13 @@
 [Match]
 Name = eth0
 
+#[Link]
+#Multicast = yes
+#AllMulticast = yes
+
 [Network]
 DHCP = yes
-DNS = 8.8.8.8
-DNS = 8.8.4.4
+#MulticastDNS = yes
+
+#[DHCP]
+#Hostname=thebox
