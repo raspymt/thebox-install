@@ -1,0 +1,32 @@
+[Unit]
+Description= %I Interface Master
+Documentation= https://www.kernel.org/doc/Documentation/networking/bonding.txt
+
+Documentation= https://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/
+Wants= network.target
+Before= network.target
+
+BindsTo= sys-subsystem-net-devices-%i.device
+
+[Service]
+EnvironmentFile= /etc/conf.d/network.conf
+
+Type= oneshot
+RemainAfterExit= yes
+
+# Apparently, "ip" is not synchronous/atomic, so allow some time.
+ExecStart=\
+-/usr/bin/sh -c ' case %I in \
+ *br*) /usr/bin/ip link add name %I type bridge ;; \
+    *) /usr/bin/ip link add name %I type bond ; \
+       echo -n $%IPRIMARY > /sys/devices/virtual/net/%I/bonding/primary ;; \
+ esac' ;\
+ /usr/bin/ip link set %I up ;\
+ /usr/bin/sleep 1
+
+ExecStop=\
+ /usr/bin/ip link delete %I ;\
+ /usr/bin/sleep 1
+
+[Install]
+RequiredBy= dhclient@%i.service

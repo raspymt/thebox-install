@@ -96,8 +96,22 @@ install_packages(){
         alsa-utils \
         avahi \
         base-devel \
+<<<<<<< Updated upstream
         git \
         hostapd \
+=======
+        cmake \
+        create_ap \
+        dhclient \
+        dnsmasq \
+        ffmpeg \
+        flac \
+        git \
+        libexif \
+        libid3tag \
+        libjpeg \
+        libvorbis \
+>>>>>>> Stashed changes
         mpd \
         nftables \
         nodejs-lts-carbon \
@@ -105,13 +119,20 @@ install_packages(){
         nss-mdns \
         ntfs-3g \
         ntp \
-        openssl \
         samba \
         sqlite \
+<<<<<<< Updated upstream
         transmission-cli \
         wget \
         syncthing
         #sudo \
+=======
+        sudo \
+        transmission-cli \
+        wget
+        # hostapd \
+        # syncthing \
+>>>>>>> Stashed changes
 }
 
 # Copy sources files, create necessary directories, set main user directory permissions
@@ -124,7 +145,8 @@ process_source_files(){
     # create thebox user directories
     mkdir -p "/home/${THEBOX_USER}/Downloads"
     mkdir -p "/home/${THEBOX_USER}/.builds"
-    mkdir -p "/home/${THEBOX_USER}/.sync"
+    # mkdir -p "/home/${THEBOX_USER}/.sync"
+    mkdir -p "/home/${THEBOX_USER}/Resilio Sync"
     # set user on thebox home directory
     chown $THEBOX_USER:$THEBOX_USER -R "/home/${THEBOX_USER}"
     # reload systemd daemon
@@ -140,6 +162,8 @@ install_minidlna(){
     cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman --upgrade --noconfirm thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
     # change default DLNA server name
     sed -i 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
+    # change network interface
+    sed -i 's/#network_interface=eth0/network_interface=bond0,uap0/' /etc/minidlna.conf
     # disable logs
     sed -i 's/#log_level=general,artwork,database,inotify,scanner,metadata,http,ssdp,tivo=warn/log_level=general=off,artwork=off,database=off,inotify=off,scanner=off,metadata=off,http=off,ssdp=off,tivo=off/' /etc/minidlna.conf
     # change default media dir
@@ -218,20 +242,44 @@ process_ssh(){
 start_enable_services(){
     # reload services
     systemctl daemon-reload
+<<<<<<< Updated upstream
     # enable and start default services
     systemctl enable --now \
+=======
+    # disable systemd-networkd-wait-online, systemd-networkd and systemd-resolved services
+    systemctl disable \
+        systemd-networkd-wait-online.service \
+        systemd-networkd.service systemd-networkd.socket \
+        systemd-resolved.service
+    # enable default services
+    systemctl enable \
+        virtual-ap.service \
+        avahi-daemon.service \
+        dnsmasq.service \
+>>>>>>> Stashed changes
         nftables.service \
-        dhcpcd@eth0.service \
-        access-point.service \
-        smb.service \
+        minidlna.service \
+        mpd.service \
         nmb.service \
         ntpd.service \
-        avahi-daemon.service \
+        smb.service \
+        theboxapi.service \
         transmission.service \
+<<<<<<< Updated upstream
         minidlna.service \
         mpd.service \
         ympd.service \
         theboxapi.service
+=======
+        ympd.service
+    # Wireless bonding (see: https://wiki.archlinux.org/index.php/Wireless_bonding)
+    ln /etc/systemd/system/slave@.service /etc/systemd/system/eth0@.service
+    ln /etc/systemd/system/slave@.service /etc/systemd/system/wlan0@.service
+
+    systemctl enable supplicant@wlan0
+    systemctl enable eth0@bond0 wlan0@bond0 master@bond0
+    systemctl enable dhclient@bond0
+>>>>>>> Stashed changes
 }
 
 # Send reboot signal
@@ -268,7 +316,17 @@ main(){
     
     # Configuration
     config_samba
+<<<<<<< Updated upstream
     config_mpd
+=======
+    # config_syncthing
+
+    # SSH config
+    config_ssh
+
+    # Supplemantary groups
+    add_user_groups
+>>>>>>> Stashed changes
     
     # Cleaning
     process_clean
