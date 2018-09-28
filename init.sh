@@ -32,21 +32,21 @@ config_timezone(){
 # Change hostname, user and timezone
 change_default_variables(){
     while true; do
-        read -p "Do you want to change default hostname (${THEBOX_HOSTNAME})" yn
+        read -p "Hostname is set to ${THEBOX_HOSTNAME}. Do you want to change it (y/n)?" yn
         case $yn in
             y ) config_hostname; break;;
             n ) break;;
         esac
     done
     while true; do
-        read -p "Do you want to change default username (${THEBOX_USER})" yn
+        read -p "User is set to ${THEBOX_USER}. Do you want to change it (y/n)?" yn
         case $yn in
             y ) config_user; break;;
             n ) break;;
         esac
     done
     while true; do
-        read -p "Do you want to change default timezone (${THEBOX_TIMEZONE})" yn
+        read -p "Timezone is set to ${THEBOX_TIMEZONE}. Do you want to change it (y/n)?" yn
         case $yn in
             y ) config_timezone; break;;
             n ) break;;
@@ -100,7 +100,7 @@ process_users(){
     # add thebox user
     useradd --create-home $THEBOX_USER
     # ask for thebox user password
-    echo "Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') user password:"
+    echo "Enter ${$THEBOX_USER} user password:"
     passwd $THEBOX_USER
 
     # add theboxapi system user
@@ -157,9 +157,9 @@ install_packages(){
 # reload systemd daemon and reload udev rules 
 process_source_files(){
     # copy source files
-    cp --recursive --force root/* /
-    # change user path if necessary
-    mv "/home/thebox" "/home/${THEBOX_USER}"
+    cp --recursive --force root/etc/* /etc/
+    cp --recursive --force root/usr/* /usr/
+    cp --recursive --force root/home/thebox/* "/home/${THEBOX_USER}/"
     # create media directory for mount points
     mkdir /media
     # create thebox user directories
