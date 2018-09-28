@@ -100,7 +100,7 @@ process_users(){
     # add thebox user
     useradd --create-home $THEBOX_USER
     # ask for thebox user password
-    echo "Enter ${$THEBOX_USER} user password:"
+    echo "Enter ${THEBOX_USER} user password:"
     passwd $THEBOX_USER
 
     # add theboxapi system user
@@ -123,7 +123,7 @@ rpi_boot_config(){
 
 # Upgrade and install necessary packages
 install_packages(){
-    pacman --sync --refresh --sysupgrade --disable-download-timeout --noconfirm \
+    pacman --sync --refresh --sysupgrade --needed --clean --disable-download-timeout --noconfirm \
         alsa-utils \
         avahi \
         base-devel \
@@ -159,7 +159,7 @@ process_source_files(){
     # copy source files
     cp --recursive --force root/etc/* /etc/
     cp --recursive --force root/usr/* /usr/
-    cp --recursive --force root/home/thebox/* "/home/${THEBOX_USER}/"
+    cp --recursive --force root/home/thebox/. "/home/${THEBOX_USER}/"
     # create media directory for mount points
     mkdir /media
     # create thebox user directories
@@ -236,7 +236,10 @@ config_samba(){
 
 # Syncthing configuration
 config_syncthing(){
-    systemctl start "syncthing@${THEBOX_USER}.service" && systemctl stop "syncthing@${THEBOX_USER}.service" && sed -i 's/127.0.0.1:8384/0.0.0.0:8384/' "/home/${THEBOX_USER}/.config/syncthing/config.xml"
+    systemctl start "syncthing@${THEBOX_USER}.service"
+    while [ ! -f "/home/${THEBOX_USER}/.config/syncthing/config.xml" ]; do sleep 1; done
+    systemctl stop "syncthing@${THEBOX_USER}.service"
+    sed -i 's/127.0.0.1:8384/0.0.0.0:8384/' "/home/${THEBOX_USER}/.config/syncthing/config.xml"
 }
 
 # SSH configuration
