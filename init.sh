@@ -362,7 +362,7 @@ start_enable_services(){
     # enable default services
     systemctl enable \
         avahi-daemon.service \
-        create_ap \
+        create_ap.service \
         dnsmasq.service \
         nftables.service \
         minidlna.service \
@@ -381,9 +381,6 @@ start_enable_services(){
     systemctl enable supplicant@wlan0
     systemctl enable eth0@bond0 wlan0@bond0 master@bond0
     systemctl enable dhclientbond@bond0
-
-    # dnsmasq need to be started to create a new /etc/resolv.conf file
-    systemctl start dnsmasq.service
 }
 
 # Send reboot signal
