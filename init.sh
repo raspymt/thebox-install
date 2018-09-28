@@ -14,9 +14,44 @@ THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 # $1 - the name of the package
 # $2 - the url of the package
 install_aur_package(){
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone ${2} ${1} && cd ${1} && makepkg" --login $THEBOX_USER
+    runuser --command="cd /home/${THEBOX_USER}/.builds && rm -rf ${1} && git clone ${2} ${1} && cd ${1} && makepkg --clean" --login $THEBOX_USER
     # install package
-    pacman --upgrade --noconfirm "/home/$THEBOX_USER/.builds/${1}/${1}*.pkg.tar.xz"
+    pacman --upgrade --noconfirm /home/$THEBOX_USER/.builds/$1/$1*.pkg.tar.xz
+}
+
+config_hostname(){
+  read -p "New hostname: " THEBOX_HOSTNAME
+}
+config_user(){
+  read -p "New username: " THEBOX_USER
+}
+config_timezone(){
+  read -p "New timezone: " THEBOX_TIMEZONE
+}
+
+# Change hostname, user and timezone
+change_default_variables(){
+    while true; do
+        read -p "Do you want to change default hostname (${THEBOX_HOSTNAME})" yn
+        case $yn in
+            y ) config_hostname; break;;
+            n ) break;;
+        esac
+    done
+    while true; do
+        read -p "Do you want to change default username (${THEBOX_USER})" yn
+        case $yn in
+            y ) config_user; break;;
+            n ) break;;
+        esac
+    done
+    while true; do
+        read -p "Do you want to change default timezone (${THEBOX_TIMEZONE})" yn
+        case $yn in
+            y ) config_timezone; break;;
+            n ) break;;
+        esac
+    done
 }
 
 # Set logs to ram
@@ -88,7 +123,7 @@ rpi_boot_config(){
 
 # Upgrade and install necessary packages
 install_packages(){
-    pacman -Syu --noconfirm \
+    pacman --sync --refresh --sysupgrade --disable-download-timeout --noconfirm \
         alsa-utils \
         avahi \
         base-devel \
@@ -123,6 +158,8 @@ install_packages(){
 process_source_files(){
     # copy source files
     cp --recursive --force root/* /
+    # change user path if necessary
+    mv "/home/thebox" "/home/${THEBOX_USER}"
     # create media directory for mount points
     mkdir /media
     # create thebox user directories
@@ -148,8 +185,6 @@ install_minidlna(){
     sed -i 's/#log_level=general,artwork,database,inotify,scanner,metadata,http,ssdp,tivo=warn/log_level=general=off,artwork=off,database=off,inotify=off,scanner=off,metadata=off,http=off,ssdp=off,tivo=off/' /etc/minidlna.conf
     # change default media dir
     sed -i 's/media_dir=\/opt/media_dir=\/media/' /etc/minidlna.conf
-    # launch a database rebuild
-    /usr/bin/minidlnad -R
 }
 
 # Install Resilio Sync
@@ -165,7 +200,7 @@ install_ympd(){
 # Install The Box API
 install_thebox_api(){
     # clone repository thebox-api, install NPM packages for production and build sqlite3 from source
-    runuser --command="mkdir /home/${THEBOX_USER}/.thebox && cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production" --login $THEBOX_USER
+    runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-api.git && cd thebox-api && npm install --production --build-from-source --sqlite=/usr/include" --login $THEBOX_USER
 }
 
 # Install The Box SAP
@@ -201,7 +236,7 @@ config_samba(){
 
 # Syncthing configuration
 config_syncthing(){
-    sed -i 's/127.0.0.1:8384/0.0.0.0:8384/' "/home/${THEBOX_USER}/.config/syncthing/config.xml"
+    systemctl start "syncthing@${THEBOX_USER}.service" && systemctl stop "syncthing@${THEBOX_USER}.service" && sed -i 's/127.0.0.1:8384/0.0.0.0:8384/' "/home/${THEBOX_USER}/.config/syncthing/config.xml"
 }
 
 # SSH configuration
@@ -243,6 +278,24 @@ INTERNET_IFACE=bond0
 SSID=thebox
 PASSPHRASE=theboxap
 USE_PSK=0' > /etc/create_ap.conf
+}
+
+# WIFI network configuration
+config_wifi_network(){
+  read -p "Enter WIFI SSID: " WIFI_SSID
+  read -p "Enter WIFI password: " WIFI_PWD
+
+  wpa_passphrase "${WIFI_SSID}" "${WIFI_PWD}" | grep -E $'network={|}|\tssid|\tpsk' >> /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+}
+
+config_wifi(){
+    while true; do
+        read -p "Do you want to configure a WIFI network (y/n)?" yn
+        case $yn in
+            y ) config_wifi_network; break;;
+            n ) break;;
+        esac
+    done
 }
 
 # Add supplementary groups for thebox user
@@ -291,6 +344,9 @@ start_enable_services(){
     systemctl enable supplicant@wlan0
     systemctl enable eth0@bond0 wlan0@bond0 master@bond0
     systemctl enable dhclientbond@bond0
+
+    # dnsmasq need to be started to create a new /etc/resolv.conf file
+    systemctl start dnsmasq.service
 }
 
 # Send reboot signal
@@ -300,6 +356,9 @@ reboot(){
 
 
 main(){
+    # Change default variables if needed
+    change_default_variables
+
     # Initial setup
     logs_to_ram
     set_timezone
@@ -332,6 +391,7 @@ main(){
     config_ssh
     config_dhclient
     config_create_ap
+    config_wifi
 
     # Supplemantary groups
     add_user_groups

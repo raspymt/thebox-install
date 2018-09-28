@@ -1,0 +1,1 @@
+theboxapi thebox= NOPASSWD: /usr/bin/systemctl,/usr/bin/node,/usr/bin/sed,/usr/bin/tee,/usr/bin/smbpasswd
