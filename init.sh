@@ -244,9 +244,43 @@ config_ssh(){
     echo "Port 4622" >> /etc/ssh/sshd_config
 }
 
+# MPD configuration
+config_mpd(){
+    sed -i "s/\"thebox\"/\"${THEBOX_USER}\"/" /etc/mpd.conf
+    sed -i "s/thebox/${THEBOX_USER}/" /usr/lib/systemd/system/mpd.service.d/override.conf
+}
+
 # dhclient configuration
 config_dhclient(){
     sed -i "s/thebox/${THEBOX_HOSTNAME}/" /etc/dhclient.conf
+}
+
+# The Box API configuration
+config_thebox_api(){
+    sed -i "s/\/home\/thebox/\/home\/${THEBOX_USER}/" /etc/systemd/system/theboxapi.service
+}
+
+# Configure sudoers
+config_sudoers(){
+    sed -i "s/thebox=/${THEBOX_USER}=/" /etc/sudoers.d/theboxapi
+}
+
+# Configure Resilio Sync
+config_rslsync(){
+    sed -i "s/thebox/${THEBOX_USER}/" /usr/lib/systemd/system/rslsync.service.d/override.conf
+    sed -i "s/thebox/${THEBOX_USER}/" "/home/${THEBOX_USER}/.config/rslsync/rslsync.conf"
+}
+
+# Configure Transmission
+config_transmission(){
+    sed -i "s/thebox/${THEBOX_USER}/" /usr/lib/systemd/system/transmission.service.d/override.conf
+
+    sed -i "s/thebox\/Downloads/${THEBOX_USER}\/Downloads/" "/home/${THEBOX_USER}/.config/transmission-daemon/settings.json"
+}
+
+# Configure usb-mount.sh
+config_usb_mount_script(){
+    sed -i "s/thebox/${THEBOX_USER}/" /usr/local/bin/usb-mount.sh
 }
 
 # Create_ap script configuration
@@ -388,9 +422,15 @@ main(){
     # Configuration
     config_samba
     config_syncthing
+    config_rslsync
     config_ssh
+    config_sudoers
+    config_mpd
+    config_transmission
     config_dhclient
+    config_thebox_api
     config_create_ap
+    config_usb_mount_script
     config_wifi
 
     # Supplemantary groups
