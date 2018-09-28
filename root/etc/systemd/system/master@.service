@@ -29,4 +29,4 @@ ExecStop=\
  /usr/bin/sleep 1
 
 [Install]
-RequiredBy= dhclient@%i.service
+RequiredBy= dhclientbond@%i.service

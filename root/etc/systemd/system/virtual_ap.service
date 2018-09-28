@@ -12,4 +12,4 @@ ExecStop=/usr/bin/iw dev uap0 del
 
 [Install]
 WantedBy=multi-user.target
-RequiredBy= master@%i.service
+RequiredBy= create_ap.service

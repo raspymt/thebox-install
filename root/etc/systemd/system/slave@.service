@@ -9,7 +9,7 @@ Before= network.target
 Requires= master@%i.service
 After= master@%i.service
 
-Before= dhclient@%i.service
+Before= dhclientbond@%i.service
 Before= supplicant@%p.service
 
 BindsTo= sys-subsystem-net-devices-%p.device

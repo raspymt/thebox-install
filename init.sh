@@ -3,16 +3,8 @@
 set -o errexit
 set -o pipefail
 set -o nounset
-# set -o xtrace
 
-# Set magic variables for current file & dir
-# __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
-# __base="$(basename ${__file} .sh)"
-# __root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this as it depends on your app
-
-# arg1="${1:-}"
-
+THEBOX_HOSTNAME='thebox'
 THEBOX_USER='thebox'
 THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 
@@ -24,7 +16,7 @@ THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 install_aur_package(){
     runuser --command="cd /home/${THEBOX_USER}/.builds && git clone ${2} ${1} && cd ${1} && makepkg" --login $THEBOX_USER
     # install package
-    pacman --upgrade --noconfirm /home/$THEBOX_USER/.builds/$1/$1*.pkg.tar.xz
+    pacman --upgrade --noconfirm "/home/$THEBOX_USER/.builds/${1}/${1}*.pkg.tar.xz"
 }
 
 # Set logs to ram
@@ -42,15 +34,16 @@ set_timezone(){
 
 # Set hostname
 set_hostname(){
-    hostnamectl set-hostname $THEBOX_USER    
+    hostnamectl set-hostname $THEBOX_HOSTNAME    
 }
 
 # Set hosts
 set_hosts(){
     echo "127.0.0.1 localhost.localdomain localhost" > /etc/hosts
     echo "::1 localhost.localdomain localhost" >> /etc/hosts
-    echo "127.0.0.1 ${THEBOX_USER}.localdomain ${THEBOX_USER}" >> /etc/hosts
-    echo "::1 ${THEBOX_USER}.localdomain ${THEBOX_USER}" >> /etc/hosts    
+    echo "127.0.0.1 ${THEBOX_HOSTNAME}.localdomain ${THEBOX_HOSTNAME}" >> /etc/hosts
+    echo "::1 ${THEBOX_HOSTNAME}.localdomain ${THEBOX_HOSTNAME}" >> /etc/hosts    
+    echo "10.0.0.1 ${THEBOX_HOSTNAME}.localdomain ${THEBOX_HOSTNAME}" >> /etc/hosts    
 }
 
 # Set locales
@@ -68,15 +61,15 @@ process_users(){
     # change root user password
     echo "Change root password:"
     passwd root
+    
     # add thebox user
-    useradd -m $THEBOX_USER
+    useradd --create-home $THEBOX_USER
     # ask for thebox user password
     echo "Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') user password:"
     passwd $THEBOX_USER
-    # supplementary groups for thebox user
-    usermod -a -G transmission,audio $THEBOX_USER
-    # remove alarm user
-    userdel --force --remove alarm    
+
+    # add theboxapi system user
+    useradd --system --home-dir "/home/${THEBOX_USER}" --groups thebox,wheel theboxapi
 }
 
 # Set raspberry pi 3 b boot config
@@ -85,8 +78,11 @@ rpi_boot_config(){
     echo 'dtparam=audio=on' >> /boot/config.txt
     # remove distortion using the 3.5mm analogue output
     echo 'audio_pwm_mode=2' >> /boot/config.txt
+    # enable the 1.2A current limiter
+    #echo 'max_usb_current=1' >> /boot/config.txt
+    # disable rainbow splash screen on boot
+    echo 'disable_splash=1' >> /boot/config.txt
     # set GPU RAM to minimum (16 MB)
-    # echo 'gpu_mem=16' >> /boot/config.txt
     sed -i 's/gpu_mem=64/gpu_mem=16/' /boot/config.txt
 }
 
@@ -96,10 +92,6 @@ install_packages(){
         alsa-utils \
         avahi \
         base-devel \
-<<<<<<< Updated upstream
-        git \
-        hostapd \
-=======
         cmake \
         create_ap \
         dhclient \
@@ -111,7 +103,6 @@ install_packages(){
         libid3tag \
         libjpeg \
         libvorbis \
->>>>>>> Stashed changes
         mpd \
         nftables \
         nodejs-lts-carbon \
@@ -121,18 +112,10 @@ install_packages(){
         ntp \
         samba \
         sqlite \
-<<<<<<< Updated upstream
-        transmission-cli \
-        wget \
-        syncthing
-        #sudo \
-=======
         sudo \
+        syncthing \
         transmission-cli \
         wget
-        # hostapd \
-        # syncthing \
->>>>>>> Stashed changes
 }
 
 # Copy sources files, create necessary directories, set main user directory permissions
@@ -145,21 +128,18 @@ process_source_files(){
     # create thebox user directories
     mkdir -p "/home/${THEBOX_USER}/Downloads"
     mkdir -p "/home/${THEBOX_USER}/.builds"
-    # mkdir -p "/home/${THEBOX_USER}/.sync"
-    mkdir -p "/home/${THEBOX_USER}/Resilio Sync"
+    mkdir -p "/home/${THEBOX_USER}/.sync"
     # set user on thebox home directory
     chown $THEBOX_USER:$THEBOX_USER -R "/home/${THEBOX_USER}"
     # reload systemd daemon
     systemctl daemon-reload
     # reload udev rules
-    udevadm control --reload-rules    
+    udevadm control --reload-rules
 }
 
 # Install Minidlna
 install_minidlna(){
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://github.com/raspymt/thebox-minidlna.git && cd thebox-minidlna && makepkg" --login $THEBOX_USER
-    # install package as root
-    cd "/home/${THEBOX_USER}/.builds/thebox-minidlna" && pacman --upgrade --noconfirm thebox-minidlna*.pkg.tar.xz && cd $OLDPWD
+    install_aur_package "thebox-minidlna" "https://github.com/raspymt/thebox-minidlna.git"
     # change default DLNA server name
     sed -i 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
     # change network interface
@@ -174,16 +154,12 @@ install_minidlna(){
 
 # Install Resilio Sync
 install_rslsync(){
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/rslsync.git && cd rslsync && makepkg" --login $THEBOX_USER
-    # install package
-    cd "/home/${THEBOX_USER}/.builds/rslsync" && pacman --upgrade --noconfirm rslsync*.pkg.tar.xz && cd $OLDPWD    
+    install_aur_package "rslsync" "https://aur.archlinux.org/rslsync.git"
 }
 
 # Install YMPD
 install_ympd(){
-    runuser --command="cd /home/${THEBOX_USER}/.builds && git clone https://aur.archlinux.org/ympd.git && cd ympd && makepkg" --login $THEBOX_USER
-    # install package
-    cd "/home/${THEBOX_USER}/.builds/ympd" && pacman --upgrade --noconfirm ympd*.pkg.tar.xz && cd $OLDPWD    
+    install_aur_package "ympd" "https://aur.archlinux.org/ympd.git"
 }
 
 # Install The Box API
@@ -218,45 +194,86 @@ config_samba(){
     # create log directory and files
     mkdir -p /usr/local/samba/var/
     touch /usr/local/samba/var/log.smb
-    touch /usr/local/samba/var/log.nmb    
+    touch /usr/local/samba/var/log.nmb
+    # change netbios name
+    sed -i "s/netbios name = thebox/netbios name = ${THEBOX_HOSTNAME}/" /etc/samba/smb.conf
 }
 
-# Configure MPD
-config_mpd(){
-    # add thebox user to audio group
-    gpasswd audio -a $THEBOX_USER    
+# Syncthing configuration
+config_syncthing(){
+    sed -i 's/127.0.0.1:8384/0.0.0.0:8384/' "/home/${THEBOX_USER}/.config/syncthing/config.xml"
+}
+
+# SSH configuration
+config_ssh(){
+    echo "Port 4622" >> /etc/ssh/sshd_config
+}
+
+# dhclient configuration
+config_dhclient(){
+    sed -i "s/thebox/${THEBOX_HOSTNAME}/" /etc/dhclient.conf
+}
+
+# Create_ap script configuration
+config_create_ap(){
+    echo 'CHANNEL=6
+GATEWAY=10.0.0.1
+WPA_VERSION=2
+ETC_HOSTS=1
+DHCP_DNS=gateway
+NO_DNS=0
+HIDDEN=0
+MAC_FILTER=0
+MAC_FILTER_ACCEPT=/etc/hostapd/hostapd.accept
+ISOLATE_CLIENTS=0
+SHARE_METHOD=nat
+IEEE80211N=1
+IEEE80211AC=0
+HT_CAPAB=[HT40][SHORT-GI-20][DSSS_CCK-40]
+VHT_CAPAB=
+DRIVER=nl80211
+NO_VIRT=1
+COUNTRY=
+FREQ_BAND=2.4
+NEW_MACADDR=
+DAEMONIZE=1
+NO_HAVEGED=0
+WIFI_IFACE=uap0
+INTERNET_IFACE=bond0
+SSID=thebox
+PASSPHRASE=theboxap
+USE_PSK=0' > /etc/create_ap.conf
+}
+
+# Add supplementary groups for thebox user
+add_user_groups(){
+    usermod -a -G audio,transmission $THEBOX_USER
 }
 
 # Cleaning process
 process_clean(){
-    # remove .builds directory? What about the updates?
+    # remove .builds directory
     rm -rf "/home/${THEBOX_USER}/.builds"
-}
-
-# SSH config
-process_ssh(){
-    echo "Port 4622" >> /etc/ssh/sshd_config
+    # remove alarm user
+    userdel --force --remove alarm    
 }
 
 # Start and enable systemd services
 start_enable_services(){
     # reload services
     systemctl daemon-reload
-<<<<<<< Updated upstream
-    # enable and start default services
-    systemctl enable --now \
-=======
+
     # disable systemd-networkd-wait-online, systemd-networkd and systemd-resolved services
     systemctl disable \
         systemd-networkd-wait-online.service \
         systemd-networkd.service systemd-networkd.socket \
         systemd-resolved.service
+
     # enable default services
     systemctl enable \
-        virtual-ap.service \
         avahi-daemon.service \
+        create_ap \
         dnsmasq.service \
->>>>>>> Stashed changes
         nftables.service \
         minidlna.service \
         mpd.service \
@@ -265,27 +282,22 @@ start_enable_services(){
         smb.service \
         theboxapi.service \
         transmission.service \
-<<<<<<< Updated upstream
-        minidlna.service \
-        mpd.service \
-        ympd.service \
-        theboxapi.service
-=======
-        ympd.service
+        virtual_ap.service
+
     # Wireless bonding (see: https://wiki.archlinux.org/index.php/Wireless_bonding)
     ln /etc/systemd/system/slave@.service /etc/systemd/system/eth0@.service
     ln /etc/systemd/system/slave@.service /etc/systemd/system/wlan0@.service
 
     systemctl enable supplicant@wlan0
     systemctl enable eth0@bond0 wlan0@bond0 master@bond0
-    systemctl enable dhclient@bond0
->>>>>>> Stashed changes
+    systemctl enable dhclientbond@bond0
 }
 
 # Send reboot signal
 reboot(){
     systemctl reboot   
 }
+
 
 main(){
     # Initial setup
@@ -316,23 +328,16 @@ main(){
     
     # Configuration
     config_samba
-<<<<<<< Updated upstream
-    config_mpd
-=======
-    # config_syncthing
-
-    # SSH config
+    config_syncthing
     config_ssh
+    config_dhclient
+    config_create_ap
 
     # Supplemantary groups
     add_user_groups
->>>>>>> Stashed changes
     
     # Cleaning
     process_clean
-
-    # SSH config
-    process_ssh
     
     # Start and enable systemd services
     start_enable_services
