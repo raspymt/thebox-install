@@ -14,7 +14,7 @@ THEBOX_TIMEZONE='Asia/Ho_Chi_Minh'
 # $1 - the name of the package
 # $2 - the url of the package
 install_aur_package(){
-    runuser --command="cd /home/${THEBOX_USER}/.builds && rm -rf ${1} && git clone ${2} ${1} && cd ${1} && makepkg --clean" --login $THEBOX_USER
+    runuser --command="cd /home/${THEBOX_USER}/.builds && rm -rf ${1} && git clone ${2} ${1} && cd ${1} && makepkg" --login $THEBOX_USER
     # install package
     pacman --upgrade --noconfirm /home/$THEBOX_USER/.builds/$1/$1*.pkg.tar.xz
 }
@@ -74,11 +74,11 @@ set_hostname(){
 
 # Set hosts
 set_hosts(){
-    echo "127.0.0.1 localhost.localdomain localhost" > /etc/hosts
-    echo "::1 localhost.localdomain localhost" >> /etc/hosts
-    echo "127.0.0.1 ${THEBOX_HOSTNAME}.localdomain ${THEBOX_HOSTNAME}" >> /etc/hosts
-    echo "::1 ${THEBOX_HOSTNAME}.localdomain ${THEBOX_HOSTNAME}" >> /etc/hosts    
-    echo "10.0.0.1 ${THEBOX_HOSTNAME}.localdomain ${THEBOX_HOSTNAME}" >> /etc/hosts    
+    echo "127.0.0.1 localhost.localdomain localhost
+::1 localhost.localdomain localhost
+127.0.0.1 ${THEBOX_HOSTNAME}.localdomain ${THEBOX_HOSTNAME}
+::1 ${THEBOX_HOSTNAME}.localdomain ${THEBOX_HOSTNAME}
+10.0.0.1 ${THEBOX_HOSTNAME}.localdomain ${THEBOX_HOSTNAME}" > /etc/hosts
 }
 
 # Set locales
@@ -128,12 +128,12 @@ install_packages(){
         avahi \
         base-devel \
         cmake \
-        create_ap \
         dhclient \
         dnsmasq \
         ffmpeg \
         flac \
         git \
+        hostapd \
         libexif \
         libid3tag \
         libjpeg \
@@ -168,10 +168,6 @@ process_source_files(){
     mkdir -p "/home/${THEBOX_USER}/.sync"
     # set user on thebox home directory
     chown $THEBOX_USER:$THEBOX_USER -R "/home/${THEBOX_USER}"
-    # reload systemd daemon
-    systemctl daemon-reload
-    # reload udev rules
-    udevadm control --reload-rules
 }
 
 # Install Minidlna
@@ -265,7 +261,7 @@ config_thebox_api(){
 
 # Configure sudoers
 config_sudoers(){
-    sed -i "s/thebox=/${THEBOX_USER}=/" /etc/sudoers.d/theboxapi
+    sed -i "s/thebox=/${THEBOX_HOSTNAME}=/" /etc/sudoers.d/theboxapi
 }
 
 # Configure Resilio Sync
@@ -286,35 +282,18 @@ config_usb_mount_script(){
     sed -i "s/thebox/${THEBOX_USER}/" /usr/local/bin/usb-mount.sh
 }
 
-# Create_ap script configuration
-config_create_ap(){
-    echo 'CHANNEL=6
-GATEWAY=10.0.0.1
-WPA_VERSION=2
-ETC_HOSTS=1
-DHCP_DNS=gateway
-NO_DNS=0
-HIDDEN=0
-MAC_FILTER=0
-MAC_FILTER_ACCEPT=/etc/hostapd/hostapd.accept
-ISOLATE_CLIENTS=0
-SHARE_METHOD=nat
-IEEE80211N=1
-IEEE80211AC=0
-HT_CAPAB=[HT40][SHORT-GI-20][DSSS_CCK-40]
-VHT_CAPAB=
-DRIVER=nl80211
-NO_VIRT=1
-COUNTRY=
-FREQ_BAND=2.4
-NEW_MACADDR=
-DAEMONIZE=1
-NO_HAVEGED=0
-WIFI_IFACE=uap0
-INTERNET_IFACE=bond0
-SSID=thebox
-PASSPHRASE=theboxap
-USE_PSK=0' > /etc/create_ap.conf
+# Configure dnsmasq
+config_dnsmasq(){
+    echo 'listen-address=::1,127.0.0.1,10.0.0.1
+cache-size=1000
+interface=bond0
+bind-interfaces
+conf-file=/usr/share/dnsmasq/trust-anchors.conf
+dnssec
+dnssec-check-unsigned
+no-resolv
+server=8.8.8.8
+server=8.8.4.4' > /etc/dnsmasq.conf
 }
 
 # WIFI network configuration
@@ -362,8 +341,8 @@ start_enable_services(){
     # enable default services
     systemctl enable \
         avahi-daemon.service \
-        create_ap.service \
         dnsmasq.service \
+        hostapd.service \
         nftables.service \
         minidlna.service \
         mpd.service \
@@ -371,8 +350,7 @@ start_enable_services(){
         ntpd.service \
         smb.service \
         theboxapi.service \
-        transmission.service \
-        virtual_ap.service
+        transmission.service
 
     # Wireless bonding (see: https://wiki.archlinux.org/index.php/Wireless_bonding)
     ln /etc/systemd/system/slave@.service /etc/systemd/system/eth0@.service
@@ -383,11 +361,22 @@ start_enable_services(){
     systemctl enable dhclientbond@bond0
 }
 
-# Send reboot signal
-reboot(){
-    systemctl reboot   
+# Reload udev rules
+reload_udev_rules(){
+    # reload udev rules
+    udevadm control --reload-rules    
 }
 
+# Ask for reboot
+ask_reboot(){
+    while true; do
+        read -p "Do you want to reboot (y/n)?" yn
+        case $yn in
+            y ) echo "Rebooting"; systemctl reboot; break;;
+            n ) echo "Installation finished. You should reboot..."; break;;
+        esac
+    done
+}
 
 main(){
     # Change default variables if needed
@@ -420,6 +409,7 @@ main(){
     install_thebox_sap
     
     # Configuration
+    config_dnsmasq
     config_samba
     config_syncthing
     config_rslsync
@@ -429,7 +419,6 @@ main(){
     config_transmission
     config_dhclient
     config_thebox_api
-    config_create_ap
     config_usb_mount_script
     config_wifi
 
@@ -442,8 +431,11 @@ main(){
     # Start and enable systemd services
     start_enable_services
 
+    # Reload udev rules
+    reload_udev_rules
+
     # Finishing
-    reboot
+    ask_reboot
 }
 
 # main "$@"
