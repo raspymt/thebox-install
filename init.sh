@@ -104,7 +104,7 @@ process_users(){
     passwd $THEBOX_USER
 
     # add theboxapi system user
-    useradd --system --home-dir "/home/${THEBOX_USER}" --groups thebox,wheel theboxapi
+    useradd --system --home-dir "/home/${THEBOX_USER}" --groups thebox theboxapi
 }
 
 # Set raspberry pi 3 b boot config
@@ -175,8 +175,8 @@ install_minidlna(){
     install_aur_package "thebox-minidlna" "https://github.com/raspymt/thebox-minidlna.git"
     # change default DLNA server name
     sed -i 's/#friendly_name=My DLNA Server/friendly_name=The Box DLNA Server/' /etc/minidlna.conf
-    # change network interface
-    sed -i 's/#network_interface=eth0/network_interface=bond0,uap0/' /etc/minidlna.conf
+    # change network interface, minidlna does not seem to broadcast ton bond0 if set as first paramters (eg: bond0,uap0)
+    sed -i 's/#network_interface=eth0/network_interface=uap0,bond0/' /etc/minidlna.conf
     # disable logs
     sed -i 's/#log_level=general,artwork,database,inotify,scanner,metadata,http,ssdp,tivo=warn/log_level=general=off,artwork=off,database=off,inotify=off,scanner=off,metadata=off,http=off,ssdp=off,tivo=off/' /etc/minidlna.conf
     # change default media dir
@@ -222,10 +222,10 @@ config_samba(){
     # ask for samba thebox user password
     echo "# Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') samba password:"
     smbpasswd -a $THEBOX_USER
-    # create log directory and files
-    mkdir -p /usr/local/samba/var/
-    touch /usr/local/samba/var/log.smb
-    touch /usr/local/samba/var/log.nmb
+    # create log directory and files, not necessary with logging to systemd
+    # mkdir -p /usr/local/samba/var/
+    # touch /usr/local/samba/var/log.smb
+    # touch /usr/local/samba/var/log.nmb
     # change netbios name
     sed -i "s/netbios name = thebox/netbios name = ${THEBOX_HOSTNAME}/" /etc/samba/smb.conf
 }
@@ -284,14 +284,11 @@ config_usb_mount_script(){
 
 # Configure dnsmasq
 config_dnsmasq(){
-    echo 'listen-address=::1,127.0.0.1,10.0.0.1
+    echo 'listen-address=::1,127.0.0.1
 cache-size=1000
-interface=bond0
-bind-interfaces
 conf-file=/usr/share/dnsmasq/trust-anchors.conf
 dnssec
 dnssec-check-unsigned
-no-resolv
 server=8.8.8.8
 server=8.8.4.4' > /etc/dnsmasq.conf
 }
