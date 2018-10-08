@@ -81,6 +81,7 @@ do_mount()
             chmod g+w ${MOUNT_POINT}
         fi
         # Add SAMBA usershare
+        ${log} "Created usershare on ${MOUNT_POINT}"
         ACLS=$(pdbedit -L -v | sed -n -e 's/User SID:             //p')
         net usershare add ${DEV_LABEL} ${MOUNT_POINT} "The Box Network share ${DEV_LABEL}" ${ACLS}:F
     fi
@@ -93,13 +94,15 @@ do_unmount()
     if [[ -z ${MOUNT_POINT} ]]; then
         ${log} "Warning: ${DEVICE} is not mounted"
     else
+        # Delete SAMBA usershare
+        USERSHARE=${MOUNT_POINT##*/}
+        net usershare delete ${USERSHARE,,}
+        ${log} "Deleted usershare on ${MOUNT_POINT}"
+        # Unmount device
         umount -l ${DEVICE}
         ${log} "Unmounted ${DEVICE} from ${MOUNT_POINT}"
         /bin/rmdir "${MOUNT_POINT}"
         sed -i.bak "\@${MOUNT_POINT}@d" /var/log/usb-mount.track
-        # Delete SAMBA usershare
-        USERSHARE=${MOUNT_POINT##*/}
-        net usershare delete ${USERSHARE,,}
     fi
 
 

@@ -45,7 +45,7 @@
     "rpc-enabled": true,
     "rpc-host-whitelist": "",
     "rpc-host-whitelist-enabled": true,
-    "rpc-password": "thebox",
+    "rpc-password": "theboxtorrents",
     "rpc-port": 9091,
     "rpc-url": "/transmission/",
     "rpc-username": "thebox",
