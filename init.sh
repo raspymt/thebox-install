@@ -273,7 +273,6 @@ config_rslsync(){
 # Configure Transmission
 config_transmission(){
     sed -i "s/thebox/${THEBOX_USER}/" /usr/lib/systemd/system/transmission.service.d/override.conf
-
     sed -i "s/thebox\/Downloads/${THEBOX_USER}\/Downloads/" "/home/${THEBOX_USER}/.config/transmission-daemon/settings.json"
 }
 
