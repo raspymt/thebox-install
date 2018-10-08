@@ -220,7 +220,7 @@ config_samba(){
     # add thebox user to sambashare group
     gpasswd sambashare -a $THEBOX_USER
     # ask for samba thebox user password
-    echo "# Enter $(echo $THEBOX_USER | tr 'a-z' 'A-Z') samba password:"
+    echo "Enter ${THEBOX_USER} samba user password:"
     smbpasswd -a $THEBOX_USER
     # create log directory and files, not necessary with logging to systemd
     # mkdir -p /usr/local/samba/var/
