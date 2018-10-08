@@ -56,7 +56,7 @@ change_default_variables(){
 
 # Set logs to ram
 logs_to_ram() {
-    # create tmp 
+    # create tmp
     echo "tmpfs /var/log tmpfs nodev,nosuid,noatime,mode=1777,size=20m 0 0" >> /etc/fstab
     # remount partitions
     mount -o remount /
@@ -64,12 +64,12 @@ logs_to_ram() {
 
 # Configure timezone
 set_timezone(){
-    timedatectl set-timezone $THEBOX_TIMEZONE    
+    timedatectl set-timezone $THEBOX_TIMEZONE
 }
 
 # Set hostname
 set_hostname(){
-    hostnamectl set-hostname $THEBOX_HOSTNAME    
+    hostnamectl set-hostname $THEBOX_HOSTNAME
 }
 
 # Set hosts
@@ -88,7 +88,7 @@ set_locales(){
     echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen
     echo "vi_VN UTF-8"       >> /etc/locale.gen
     # generate locales
-    locale-gen    
+    locale-gen
 }
 
 # Process root and main users
@@ -96,7 +96,7 @@ process_users(){
     # change root user password
     echo "Change root password:"
     passwd root
-    
+
     # add thebox user
     useradd --create-home $THEBOX_USER
     # ask for thebox user password
@@ -154,7 +154,7 @@ install_packages(){
 }
 
 # Copy sources files, create necessary directories, set main user directory permissions
-# reload systemd daemon and reload udev rules 
+# reload systemd daemon and reload udev rules
 process_source_files(){
     # copy source files
     cp --recursive --force root/etc/* /etc/
@@ -321,7 +321,7 @@ process_clean(){
     # remove .builds directory
     rm -rf "/home/${THEBOX_USER}/.builds"
     # remove alarm user
-    userdel --force --remove alarm    
+    userdel --force --remove alarm
 }
 
 # Start and enable systemd services
@@ -361,7 +361,7 @@ start_enable_services(){
 # Reload udev rules
 reload_udev_rules(){
     # reload udev rules
-    udevadm control --reload-rules    
+    udevadm control --reload-rules
 }
 
 # Ask for reboot
@@ -388,23 +388,23 @@ main(){
 
     # Users setup
     process_users
-    
+
     # Configure RPI boot parameters
     rpi_boot_config
-    
+
     # Install and update packages
     install_packages
-    
-    # Copy source config files 
+
+    # Copy source config files
     process_source_files
-    
+
     # Packages installation
     install_minidlna
     install_rslsync
     install_ympd
     install_thebox_api
     install_thebox_sap
-    
+
     # Configuration
     config_dnsmasq
     config_samba
@@ -421,10 +421,10 @@ main(){
 
     # Supplemantary groups
     add_user_groups
-    
+
     # Cleaning
     process_clean
-    
+
     # Start and enable systemd services
     start_enable_services
 
