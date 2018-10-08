@@ -206,7 +206,7 @@ install_thebox_sap(){
     runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && npm install && npm run build" --login $THEBOX_USER
 }
 
-# Configure Samba
+# Samba configuration
 config_samba(){
     # create samba usershares directory
     mkdir -p /var/lib/samba/usershares
@@ -309,6 +309,19 @@ config_wifi(){
             n ) break;;
         esac
     done
+}
+
+# Add supplementary groups for thebox user
+add_user_groups(){
+    usermod -a -G audio,transmission $THEBOX_USER
+}
+
+# Cleaning process
+process_clean(){
+    # remove .builds directory
+    rm -rf "/home/${THEBOX_USER}/.builds"
+    # remove alarm user
+    userdel --force --remove alarm
 }
 
 # Add supplementary groups for thebox user
