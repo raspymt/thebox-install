@@ -123,7 +123,7 @@ rpi_boot_config(){
 
 # Upgrade and install necessary packages
 install_packages(){
-    pacman --sync --refresh --sysupgrade --needed --clean --disable-download-timeout --noconfirm \
+    pacman --sync --refresh --sysupgrade --needed --disable-download-timeout --noconfirm \
         alsa-utils \
         avahi \
         base-devel \
@@ -298,6 +298,8 @@ config_wifi_network(){
   read -p "Enter WIFI password: " WIFI_PWD
 
   wpa_passphrase "${WIFI_SSID}" "${WIFI_PWD}" | grep -E $'network={|}|\tssid|\tpsk' >> /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+
+  systemctl enable supplicant@wlan0
 }
 
 config_wifi(){
@@ -365,7 +367,6 @@ start_enable_services(){
     ln /etc/systemd/system/slave@.service /etc/systemd/system/eth0@.service
     ln /etc/systemd/system/slave@.service /etc/systemd/system/wlan0@.service
 
-    systemctl enable supplicant@wlan0
     systemctl enable eth0@bond0 wlan0@bond0 master@bond0
     systemctl enable dhclientbond@bond0
 }
