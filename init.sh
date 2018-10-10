@@ -203,7 +203,7 @@ install_thebox_api(){
 install_thebox_sap(){
     # clone repository thebox-sap, install NPM packages prod and dev and build nuxt
     # TODO: Do we need to remove NPM dev modules with the command 'npm prune --production'?
-    runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && sed -i 's/thebox/${THEBOX_HOSTNAME}/' thebox.config.js && npm install && npm run build" --login $THEBOX_USER
+    runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && sed -i 's/thebox/${THEBOX_HOSTNAME}/' thebox.config.js && sed -i 's/http:\/\/thebox/http:\/\/${THEBOX_HOSTNAME}/' locales/*.json && npm install && npm run build" --login $THEBOX_USER
 }
 
 # Samba configuration
