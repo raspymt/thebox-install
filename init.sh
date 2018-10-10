@@ -39,7 +39,7 @@ change_default_variables(){
         esac
     done
     while true; do
-        read -p "User is set to ${THEBOX_USER}. Do you want to change it (y/n)?" yn
+        read -p "Username is set to ${THEBOX_USER}. Do you want to change it (y/n)?" yn
         case $yn in
             y ) config_user; break;;
             n ) break;;
@@ -203,7 +203,7 @@ install_thebox_api(){
 install_thebox_sap(){
     # clone repository thebox-sap, install NPM packages prod and dev and build nuxt
     # TODO: Do we need to remove NPM dev modules with the command 'npm prune --production'?
-    runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && npm install && npm run build" --login $THEBOX_USER
+    runuser --command="cd /home/${THEBOX_USER}/.thebox && git clone https://github.com/raspymt/thebox-sap.git && cd thebox-sap && sed -i 's/thebox/${THEBOX_HOSTNAME}/' thebox.config.js && npm install && npm run build" --login $THEBOX_USER
 }
 
 # Samba configuration
@@ -219,13 +219,9 @@ config_samba(){
     chmod 1770 /var/lib/samba/usershares
     # add thebox user to sambashare group
     gpasswd sambashare -a $THEBOX_USER
-    # ask for samba thebox user password
+    # ask for thebox user samba password
     echo "Enter ${THEBOX_USER} samba user password:"
     smbpasswd -a $THEBOX_USER
-    # create log directory and files, not necessary with logging to systemd
-    # mkdir -p /usr/local/samba/var/
-    # touch /usr/local/samba/var/log.smb
-    # touch /usr/local/samba/var/log.nmb
     # change netbios name
     sed -i "s/netbios name = thebox/netbios name = ${THEBOX_HOSTNAME}/" /etc/samba/smb.conf
 }

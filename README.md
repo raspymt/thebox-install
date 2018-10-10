@@ -8,5 +8,5 @@ A working Archlinux ARMv7 Installation on Raspberry PI 3. See https://archlinuxa
 ## Installation
 Connect to your Raspberry by SSH, then:
 ```bash
-cd /tmp && pacman -Syu --noconfirm git && git clone https://github.com/raspymt/thebox-install.git && cd thebox-install && ./init.sh
+pacman --sync --refresh --sysupgrade --needed --disable-download-timeout --noconfirm git && git clone https://github.com/raspymt/thebox-install.git /tmp/thebox-install && cd /tmp/thebox-install && ./init.sh
 ```
