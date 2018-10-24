@@ -1,5 +1,6 @@
 [Unit]
 Description=Add vitual Access Point interface uap0
+After=network.target
 PartOf=hostapd.service
 
 [Service]
