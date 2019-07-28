@@ -104,7 +104,7 @@ process_users(){
     passwd $THEBOX_USER
 
     # add theboxapi system user
-    useradd --system --home-dir "/home/${THEBOX_USER}" --groups thebox theboxapi
+    useradd --system --home-dir "/home/${THEBOX_USER}" --groups ${THEBOX_USER} theboxapi
 }
 
 # Set raspberry pi 3 b boot config
