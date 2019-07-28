@@ -145,6 +145,7 @@ install_packages(){
         nss-mdns \
         ntfs-3g \
         ntp \
+        python2 \
         samba \
         sqlite \
         sudo \
