@@ -236,7 +236,7 @@ config_syncthing(){
 
 # SSH configuration
 config_ssh(){
-    echo "Port 4622" >> /etc/ssh/sshd_config
+    echo "Port 46022" >> /etc/ssh/sshd_config
 }
 
 # MPD configuration
